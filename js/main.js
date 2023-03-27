@@ -7,8 +7,12 @@ d3.tsv('data/sampleData.tsv')
     console.log(data.length);
     data.forEach(d => {
       //console.log(d);
-      d.latitude = +d.LATITUDE; //make sure these are not strings
-      d.longitude = +d.LONGITUDE; //make sure these are not strings
+      if(d.LATITUDE && d.LONGITUDE){
+        d.latitude = +d.LATITUDE; //make sure these are not strings
+        d.longitude = +d.LONGITUDE;
+
+      }
+
     });
 
     // Initialize chart and then show it
