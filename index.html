@@ -7,6 +7,23 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+        <!-- <b
+    <div class="dropdown">utton onclick="myFunction()" class="dropbtn">Color By: </button>
+        <div id="myDropdown" class="dropdown-content">
+          <button id="1" onclick="colorBy('service')">Service</button>
+          <button id="2" onclick="colorBy('tim')">Time Between Updated and Requested</button>
+          <button id="3" onclick="colorBy('season')">Time of Year</button>
+          <button id="4" onclick="colorBy('agency')"> Agency Responisble</button>
+        </div>
+      </div> -->
+<div>
+    <p>Color By:</p>
+    <button id="serviceBtn">Service</button>
+    <button id="timeBtn">Time Between Updated and Requested</button>
+    <button id="yearBtn">Time of Year</button>
+    <button id="agencyBtn"> Agency Responisble</button>
+</div>
+       
     <div id="my-map"></div>
     
     <script src="js/d3.v6.min.js"></script>
@@ -15,6 +32,7 @@
 
     <script src="js/main.js"></script>
     <script src="js/leafletMap.js"></script>
+    <script src="js/colorToggle.js"></script>
 
     <div id="tooltip"></div>
 
