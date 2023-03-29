@@ -11,7 +11,17 @@ class LeafletMap {
     }
     this.data = _data;
 
-    this.color = "service"
+    // var longdat = [];
+    // //Get data with location data
+    // this.dataAll.forEach(d => {
+    //   if(d.longitude && d.latitude && d.REQUESTED_DATETIME){
+    //       longdat.push(d);
+    //   }
+      
+    // });
+    // this.data = longdat;
+
+    this.color = "timeBtwn"
     this.colorScale = this.setColorScale();
     this.initVis();
   }
@@ -70,10 +80,10 @@ class LeafletMap {
       vis.updateVis();
     });
 
-    document.getElementById("service").addEventListener("click", vis.setColorType("service"));
-    document.getElementById("timeBtwn").addEventListener("click", vis.setColorType("timeBtwn"));
-    document.getElementById("timeYear").addEventListener("click", vis.setColorType("timeYear"));
-    document.getElementById("agency").addEventListener("click", vis.setColorType("agency"));
+    document.getElementById("service").addEventListener("click", function() {vis.setColorType("service")});
+    document.getElementById("timeBtwn").addEventListener("click", function() {vis.setColorType("timeBtwn")});
+    document.getElementById("timeYear").addEventListener("click", function() {vis.setColorType("timeYear")});
+    document.getElementById("agency").addEventListener("click", function() {vis.setColorType("agency")});
 
 	  vis.updateVis();
   }
