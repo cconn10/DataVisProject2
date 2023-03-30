@@ -83,8 +83,6 @@ class Timeline {
         // Rollup data to get counts of calls per day
         vis.dayCounts = d3.rollup(vis.data.filter(d => {return d.REQUESTED_DATETIME != ""}), d => d.length, d => d.REQUESTED_DATETIME);
 
-        console.log(vis.dayCounts);
-
         // Structure data to be easily iteratable/sortable
         vis.dataOverTime = [];
         vis.dayCounts.forEach((value, key, map) => {
@@ -94,15 +92,11 @@ class Timeline {
             }
         });
 
-        console.log(vis.dataOverTime);
-
         // Sort data by day
         vis.dataOverTime.sort((a, b) => {
             if (a.time < b.time) return -1;
             else return 1;
         });
-
-        console.log(vis.dataOverTime);
 
         // insert 0s for days not in data (between min and max)
         let i = 0;
@@ -112,8 +106,6 @@ class Timeline {
             }
             i++;
         }
-        
-        console.log(vis.dataOverTime);
 
 		//reusable functions for x and y 
         vis.xValue = d => d.time; 

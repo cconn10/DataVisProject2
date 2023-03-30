@@ -21,7 +21,7 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 			return (
 				d.REQUESTED_DATETIME != ""
 				&& parseTime(d.REQUESTED_DATETIME) != null 
-				&& parseTime(d.REQUESTED_DATETIME) >= parseTime("2022-10-01")
+				&& parseTime(d.REQUESTED_DATETIME) >= parseTime("2022-01-01")
 				&& parseTime(d.REQUESTED_DATETIME) <= parseTime("2023-01-01")
 				&& !isNaN(d.latitude)
 				&& !isNaN(d.longitude)
@@ -53,10 +53,11 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 
 dispatcher.on('filterTime', selectedDomain => {
 	if (selectedDomain.length == 0) {
-		// Reset  time filter
+		// Reset time filter
 		leafletMap.data.timeBounds = d3.extent(data, d => data.parseTime(d.REQUESTED_DATETIME));
 	} else {
 		leafletMap.data.timeBounds = selectedDomain;
 	}
+	console.log(leafletMap.data.timeBounds);
 	leafletMap.updateVis();
 });
