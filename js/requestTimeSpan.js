@@ -1,10 +1,10 @@
-class CallsPerDay {
+class RequestTimeSpan {
     constructor(_config,_dispatcher, _data) {
         this.config = {
             parentElement: _config.parentElement,
             containerHeight: _config.containerHeight || 500,
             containerWidth: _config.containerWidth || 140,
-            margin: {top: 10, right: 20, bottom: 30, left: 70},
+            margin: {top: 10, right: 20, bottom: 30, left: 170},
             toolTipPadding: _config.toolTipPadding || 15,
         }
         this.dispatcher = _dispatcher
@@ -45,24 +45,28 @@ class CallsPerDay {
     updateVis() {
         let vis = this
 
-        vis.daysOfTheWeek = Array.from(d3.rollup(vis.data, d=> d.length, d => d.requestedDate.getDay())).sort()
-
-        vis.dayConverter = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
         vis.xValue = d => d[1]
-        vis.yValue = d => vis.dayConverter[d[0]]
+        vis.yValue = d => d[0]
 
-        vis.xScale.domain([0, d3.max(vis.daysOfTheWeek, d => vis.xValue(d))])
-        vis.yScale.domain((vis.daysOfTheWeek.map(m => vis.yValue(m))))
+        vis.timeSpan = d3.rollup(vis.data, d=> d.length, d => (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24))
+
+        for(let i = 0; i < d3.max(vis.timeSpan, d => vis.yValue(d)); i++){
+            if(!Array.from(vis.timeSpan.keys()).includes(i))
+                vis.timeSpan.set(i, 0)
+        }
+        vis.timeSpan = Array.from(vis.timeSpan)
+
+        vis.xScale.domain([0, d3.max(vis.timeSpan, d => vis.xValue(d))])
+        vis.yScale.domain(vis.timeSpan.map(d => vis.yValue(d)).sort((a,b) => a-b))
 
         vis.chart.selectAll(".label")        
-            .data(vis.daysOfTheWeek)
+            .data(vis.timeSpan)
             .join("text")
                 .attr("class","label")
                 .attr("x", d => vis.xScale(vis.xValue(d)))
-                .attr("y", d => vis.yScale(vis.yValue(d)))
+                .attr("y", d => (vis.yScale(vis.yValue(d)) + (vis.yScale.bandwidth() / 2)))
                 .attr("dy", ".75em")
-                .text(d => vis.xValue(d));
+                .text(d => vis.xValue(d) > 0 ? vis.xValue(d) : "");
 
         vis.renderVis()
     }
@@ -71,13 +75,13 @@ class CallsPerDay {
         let vis = this
 
         vis.bars = vis.chart.selectAll('.bar')
-            .data(vis.daysOfTheWeek)
+            .data(vis.timeSpan)
             .join('rect')
                 .attr('class', 'bar')
                 .attr('fill', '#4FB062')
                 .attr('width', d => vis.xScale(vis.xValue(d)))
                 .attr('height', vis.yScale.bandwidth())
-                .attr('y', d => vis.yScale(vis.yValue(d)) )
+                .attr('y', d => vis.yScale(vis.yValue(d)))
                 .attr('x', 0)
 
                 

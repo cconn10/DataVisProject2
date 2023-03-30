@@ -2,25 +2,6 @@ let data;
 
 // Initialize dispatcher that is used to orchestrate events
 const dispatcher = d3.dispatch('filterTime');
-
-<<<<<<< HEAD
-d3.csv('data/Cincinnati_311__Non-Emergency__Service_Requests.csv')
-.then(data => {
-    console.log(data[0]);
-    console.log(data.length);
-    data.forEach(d => {
-      d.latitude = +d.LATITUDE; //make sure these are not strings
-      d.longitude = +d.LONGITUDE; //make sure these are not strings
-
-      d.requestedDate = new Date(d.REQUESTED_DATE)
-    });
-
-    // Initialize chart and then show it
-    //leafletMap = new LeafletMap({ parentElement: '#my-map'}, data);
-
-    console.log(data)
-    let callsPerDay = new CallsPerDay({parentElement: '#calls-per-day'}, data)
-    callsPerDay.updateVis()
 	
 d3.tsv('data/sampleData.tsv')
 	.then(_data => {
@@ -38,10 +19,44 @@ d3.tsv('data/sampleData.tsv')
 			//console.log(d);
 			d.latitude = +d.LATITUDE; //make sure these are not strings
 			d.longitude = +d.LONGITUDE; //make sure these are not strings
+
+			d.requestedDate = new Date(d.REQUESTED_DATE)
+			d.updatedDate = new Date(d.UPDATED_DATE)
+
+			d.serviceName = d.SERVICE_NAME
+			d.zipcode = d.ZIPCODE
 		});
 
 		// Initialize chart and then show it
 		leafletMap = new LeafletMap({ parentElement: '#my-map'}, data);
+		
+		callsPerDay = new CallsPerDay({
+			parentElement: '#calls-per-day',
+			'containerHeight': 300,
+			'containerWidth': 400
+		}, dispatcher, data)
+		callsPerDay.updateVis()
+
+		serviceName = new ServiceName({
+			parentElement: '#service-name',
+			'containerHeight': 300,
+			'containerWidth': 500
+		}, dispatcher, data)
+		serviceName.updateVis()
+
+		requestedTimeSpan = new RequestTimeSpan({
+			parentElement: '#request-time-span',
+			'containerHeight': 300,
+			'containerWidth': 500
+		}, dispatcher, data)
+		requestedTimeSpan.updateVis()
+
+		zipcode = new Zipcode({
+			parentElement: '#zipcode',
+			'containerHeight': 300,
+			'containerWidth': 500
+		}, dispatcher, data)
+		zipcode.updateVis()
 
 		timeline = new Timeline({
 			'parentElement': '#timeline',
