@@ -11,16 +11,6 @@ class LeafletMap {
     }
     this.data = _data;
 
-    // var longdat = [];
-    // //Get data with location data
-    // this.dataAll.forEach(d => {
-    //   if(d.longitude && d.latitude && d.REQUESTED_DATETIME){
-    //       longdat.push(d);
-    //   }
-      
-    // });
-    // this.data = longdat;
-
     this.color = "timeBtwn"
     this.colorScale = this.setColorScale();
     this.initVis();
@@ -50,9 +40,9 @@ class LeafletMap {
 
   
     //this is the base map layer, where we are showing the map background
-    vis.base_layer = L.tileLayer(vis.topoUrl, {
+    vis.base_layer = L.tileLayer(vis.stUrl, {
       id: 'esri-image',
-      attribution: vis.topoAttr,
+      attribution: vis.stAttr,
       ext: 'png'
     });
 
@@ -106,7 +96,7 @@ class LeafletMap {
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
    .data(vis.data.filter( d => {
-	   return (vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
+	   return (!isNaN(d.longitude) && !isNaN(d.latitude) && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
    })) 
    .join('circle')
 	   .attr("fill", function(d){return vis.colorScale(vis.getColorInput(d))}) 
