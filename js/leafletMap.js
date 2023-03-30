@@ -88,7 +88,7 @@ class LeafletMap {
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
    .data(vis.data.filter( d => {
-	   return (vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
+	   return (!isNaN(d.latitude) && !isNaN(d.longitude) && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
    })) 
    .join('circle')
 	   .attr("fill", "steelblue") 
