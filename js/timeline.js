@@ -81,22 +81,28 @@ class Timeline {
         let vis = this;
 
         // Rollup data to get counts of calls per day
-        vis.dayCounts = d3.rollup(vis.data, d => d.length, d => d.REQUESTED_DATETIME);
+        vis.dayCounts = d3.rollup(vis.data.filter(d => {return d.REQUESTED_DATETIME != ""}), d => d.length, d => d.REQUESTED_DATETIME);
+
+        console.log(vis.dayCounts);
 
         // Structure data to be easily iteratable/sortable
         vis.dataOverTime = [];
         vis.dayCounts.forEach((value, key, map) => {
-            // TODO: see if there are still blank entries like I had for project 1
-            if (key != "") {
+            // This filtering is being handled in main but in case that gets removed it doesn't hurt to leave this
+            if (vis.parseTime(key) != null && vis.parseTime(key) >= vis.parseTime("2021-01-01") && vis.parseTime(key) <= vis.parseTime("2023-01-01")) {
                 vis.dataOverTime.push({"time": vis.parseTime(key), "val": value});
             }
         });
+
+        console.log(vis.dataOverTime);
 
         // Sort data by day
         vis.dataOverTime.sort((a, b) => {
             if (a.time < b.time) return -1;
             else return 1;
         });
+
+        console.log(vis.dataOverTime);
 
         // insert 0s for days not in data (between min and max)
         let i = 0;
@@ -107,6 +113,7 @@ class Timeline {
             i++;
         }
         
+        console.log(vis.dataOverTime);
 
 		//reusable functions for x and y 
         vis.xValue = d => d.time; 
@@ -141,11 +148,14 @@ class Timeline {
 		
 		// Update the brush and define a default position
 		// TODO: change default position to something meaningful?
-		const defaultBrushSelection = [ vis.xScale(d3.min(vis.dataOverTime, d => vis.xValue(d))), 
-                                        vis.xScale(d3.max(vis.dataOverTime, d => vis.xValue(d)))];
+		// const defaultBrushSelection = [ vis.xScale(d3.min(vis.dataOverTime, d => vis.xValue(d))), 
+        //                                 vis.xScale(d3.max(vis.dataOverTime, d => vis.xValue(d)))];
+
+        const defaultBrushSelection = [ vis.xScale(data.parseTime("2022-11-01")), 
+                                        vis.xScale(data.parseTime("2022-11-09"))];
 		vis.brushG
 			.call(vis.brush)
-			//.call(vis.brush.move, defaultBrushSelection);
+			.call(vis.brush.move, defaultBrushSelection);
 	}
 
 	brushed(selection, event) {
