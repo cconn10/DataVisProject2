@@ -42,8 +42,8 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 
 		heatmap = new Heatmap({
 			'parentElement': '#heatmap',
-			'containerHeight': 500,
-			'containerWidth': 1500
+			'containerHeight': 250,
+			'containerWidth': 750
 		}, dispatcher, data);
 		heatmap.updateVis();
 

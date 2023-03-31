@@ -135,7 +135,7 @@ vis.dropdown.addEventListener('change', function() {
     vis.data.dayTally = new Array(d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]) + 1).fill(0);
 
     // Max # of calls shown for each day
-    vis.data.dayMax = 250 / d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]);
+    vis.data.dayMax = 500 / d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]);
 
     // Filter the data for errors, time bounds from timeline brush, and whether the current map view includes the lat/long
     vis.filteredData = vis.data.filter( d => {
@@ -162,7 +162,7 @@ vis.dropdown.addEventListener('change', function() {
    
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
-   .data(vis.data.filter( d => {
+   .data(vis.filteredData.filter( d => {
 	   return (!isNaN(d.longitude) && !isNaN(d.latitude) && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
    })) 
 

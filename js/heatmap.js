@@ -46,17 +46,18 @@ class Heatmap {
             .range([0, vis.width]);
         
         vis.yScale = d3.scaleBand()
-            .domain(["Sun", "Mon", "Tues", "Weds", "Thurs", "Fri", "Sat"])
+            .domain(["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"])
             .range([0, vis.height]);
 
         vis.colorScale = d3.scaleSequential()
             .interpolator(d3.interpolateYlOrRd);
 
-        vis.dayOfWeek = { 0: "Sun", 1: "Mon", 2: "Tues", 3: "Weds", 4: "Thurs", 5: "Fri", 6: "Sat" };
+        vis.dayOfWeek = { 0: "Sun", 1: "Mon", 2: "Tues", 3: "Wed", 4: "Thurs", 5: "Fri", 6: "Sat" };
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
-			.tickFormat(d3.timeFormat("%Y-%m-%d"));
+            .ticks(d3.timeSunday.every(1))
+            .tickFormat(d3.timeFormat("%m-%d"));
 
         vis.yAxis = d3.axisLeft(vis.yScale);
 
@@ -104,7 +105,7 @@ class Heatmap {
             if (!vis.dayCounts.has(vis.formatTime(day))) {
                 vis.dataOverTime.splice(i, 0, {"time": day, "val": 0});
             }
-            console.log(vis.dayOfWeek[d3.timeDay.count(d3.timeSunday.floor(day), day)]);
+            // console.log(vis.dayOfWeek[d3.timeDay.count(d3.timeSunday.floor(day), day)]);
             i++;
         }
 
@@ -112,8 +113,11 @@ class Heatmap {
         vis.xValue = d => d.time; 
         vis.colorValue = d => d.val;
 
-        // Set scale domains with processed data
-        vis.xScale.domain([d3.min(vis.dataOverTime, d => d3.timeSunday.floor(vis.xValue(d))), d3.max(vis.dataOverTime, d => d3.timeSunday.ceil(vis.xValue(d)))]);
+        // Set scale domains
+        // x domain is manipulated to include the full week of 
+        vis.xDomain = [ d3.min(vis.dataOverTime, d => d3.timeDay.offset(d3.timeSunday.floor(vis.xValue(d)), -4)), 
+                        d3.max(vis.dataOverTime, d => d3.timeDay.offset(d3.timeSunday.floor(vis.xValue(d)), 4))]
+        vis.xScale.domain(vis.xDomain);
         vis.colorScale.domain(d3.extent(vis.dataOverTime, d => vis.colorValue(d)));
 
 		vis.renderVis();
@@ -122,16 +126,20 @@ class Heatmap {
 	renderVis() {
 		let vis = this;
 
-        // TODO
-        vis.squares = vis.chart.selectAll('.square')
+        let xWidth = vis.xScale(new Date(2000, 0, 7)) - vis.xScale(new Date(2000, 0, 0)) - 2;
+
+        vis.squares = vis.chart.selectAll('rect')
             .data(vis.dataOverTime)
             .join('rect')
                 .attr('fill', d => vis.colorScale(vis.colorValue(d)))
-                .attr('height', d => vis.yScale.bandwidth())
-                .attr('width', d => vis.xScale(new Date(2000, 0, 7)) - vis.xScale(new Date(2000, 0, 0)))
-                .attr('x', d => vis.xScale(d3.timeSunday.floor(vis.xValue(d))))
+                .attr('height', vis.yScale.bandwidth() - 2)
+                .attr('width', xWidth)
+                .attr('x', d => vis.xScale(d3.timeSunday.floor(vis.xValue(d))) - xWidth/2)
                 .attr('y', d => vis.yScale(vis.dayOfWeek[d3.timeDay.count(d3.timeSunday.floor(vis.xValue(d)), vis.xValue(d))]))
 		
+        if (d3.timeSunday.count(vis.xDomain[0], vis.xDomain[1]) > 20) vis.xAxis.ticks(d3.timeSunday.every(2));
+        else vis.xAxis.ticks(d3.timeSunday.every(1));
+            
 		// Update axis
 		vis.xAxisG.call(vis.xAxis);
         vis.yAxisG.call(vis.yAxis);
