@@ -84,6 +84,8 @@ class LeafletMap {
     //handler here for updating the map, as you zoom in and out           
     vis.theMap.on("zoomend", function(){
       vis.updateVis();
+    }).on("moveend", function(){
+      vis.updateVis();
     });
 
 
@@ -175,27 +177,21 @@ vis.dropdown.addEventListener('change', function() {
     //   radiusSize = desiredMetersForPoint / metresPerPixel;
     // }
 
+    console.log(vis.data.filtered)
     // Array of 0s to hold the data counts for each day
     vis.data.dayTally = new Array(d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]) + 1).fill(0);
 
     // Max # of calls shown for each day
-    vis.data.dayMax = 500 / d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]);
+    vis.data.dayMax = 250 / d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]);
 
-    // Filter the data for errors, time bounds from timeline brush, and whether the current map view includes the lat/long
-    vis.filteredData = vis.data.filter( d => {
-      return (
-          !isNaN(d.latitude) 
-          && !isNaN(d.longitude) 
-          && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) 
-          && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1]
-          && vis.theMap.getBounds().contains([d.latitude,d.longitude])
-        );
-      })
+    // Filter the data for errors, time bounds from timeline brush 
+
+    vis.filteredData = vis.data.filtered.filter(d => vis.theMap.getBounds().contains([d.latitude, d.longitude]))
 
     // Then filter the remaining data by counting up the calls for each day and filtering out the excess
     vis.filteredData = vis.filteredData.filter( d => {
-      let index = d3.timeDay.count(vis.data.timeBounds[0], vis.data.parseTime(d.REQUESTED_DATETIME));
-      vis.data.dayTally[index]++;
+      let index = d3.timeDay.count(vis.data.filtered[0], vis.data.parseTime(d.REQUESTED_DATETIME));
+      vis.data.dayTally[index]++; 
       if (vis.data.dayTally[index] > vis.data.dayMax) {
         return false;
       }
@@ -203,12 +199,15 @@ vis.dropdown.addEventListener('change', function() {
     })
 
     // console.log(vis.filteredData);
+    // vis.Keys = vis.Legend.selectAll('rect')
+    // .data(vis.setMapTypeKey())
+    // .join('rect')
+    // .attr("fill", function(d){return vis.colorScale(d)})
+    // .attr("stroke", "black");
    
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
-   .data(vis.filteredData.filter( d => {
-	   return (!isNaN(d.longitude) && !isNaN(d.latitude) && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
-   })) 
+   .data(vis.filteredData) 
    .join('circle')
 	   .attr("fill", function(d){return vis.colorScale(vis.getColorInput(d))}) 
 	   .attr("stroke", "black")

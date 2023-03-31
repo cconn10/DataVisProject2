@@ -82,7 +82,7 @@ class Timeline {
         let vis = this;
 
         // Rollup data to get counts of calls per day
-        vis.dayCounts = d3.rollup(vis.data.filter(d => {return d.REQUESTED_DATETIME != ""}), d => d.length, d => d.REQUESTED_DATETIME);
+        vis.dayCounts = d3.rollup(vis.data, d => d.length, d => d.REQUESTED_DATETIME);
 
         // Structure data to be easily iteratable/sortable
         vis.dataOverTime = [];
@@ -127,7 +127,7 @@ class Timeline {
         vis.line = d3.line()
             .x(d => vis.xScale(vis.xValue(d)))
             .y(d => vis.yScale(vis.yValue(d)));
-
+            
         // Add line path 
         vis.linePath
             .data([vis.dataOverTime])
@@ -142,10 +142,7 @@ class Timeline {
 		
 		// Update the brush and define a default position
 		// TODO: change default position to something meaningful?
-		// const defaultBrushSelection = [ vis.xScale(d3.min(vis.dataOverTime, d => vis.xValue(d))), 
-        //                                 vis.xScale(d3.max(vis.dataOverTime, d => vis.xValue(d)))];
-
-        const defaultBrushSelection = [ vis.xScale(data.parseTime("2022-11-01")), 
+		const defaultBrushSelection = [ vis.xScale(data.parseTime("2022-11-01")), 
                                         vis.xScale(data.parseTime("2022-11-09"))];
 		vis.brushG
 			.call(vis.brush)
