@@ -205,9 +205,7 @@ vis.dropdown.addEventListener('change', function() {
    
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
-   .data(vis.data.filtered.filter( d => {
-	   return (!isNaN(d.longitude) && !isNaN(d.latitude))
-   })) 
+   .data(vis.filteredData) 
    .join('circle')
 	   .attr("fill", function(d){return vis.colorScale(vis.getColorInput(d))}) 
 	   .attr("stroke", "black")

@@ -9,8 +9,6 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 
 		let parseTime = d3.timeParse("%Y-%m-%d");
 
-		console.log(data[0]);
-		console.log(data.length);
 		data.forEach(d => {
 			//console.log(d);
 			d.latitude = +d.LATITUDE; //make sure these are not strings
@@ -80,6 +78,13 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 			'containerWidth': 500
 		}, dispatcher, data)
 		zipcode.updateVis()
+
+		heatmap = new Heatmap({
+			'parentElement': '#heatmap',
+			'containerHeight': 250,
+			'containerWidth': 750
+		}, dispatcher, data);
+		heatmap.updateVis();
 
 		timeline = new Timeline({
 			'parentElement': '#timeline',
@@ -174,6 +179,7 @@ dispatcher.on('filterServiceName', selectedDomain => {
 
 function updateVisualizations() {
 	leafletMap.updateVis();
+	heatmap.updateVis();
 	if(!data.filteredVisualizations.includes('callsPerDay'))
 		callsPerDay.updateVis();
 	if(!data.filteredVisualizations.includes('zipcode'))
