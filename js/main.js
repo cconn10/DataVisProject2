@@ -46,7 +46,7 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 		data.parseTime = d3.timeParse("%Y-%m-%d");
 
 		// Initial time filter bounds for all visualizations
-		data.timeBounds = d3.extent(data, d => parseTime(d.REQUESTED_DATETIME));
+		data.timeBounds = d3.extent(data, d => data.parseTime(d.REQUESTED_DATETIME));
 
 		// console.log(data[0]);
 
