@@ -13,6 +13,16 @@ class LeafletMap {
 
     this.color = "service"
     this.colorScale = this.setColorScale();
+    this.keyScale = this.getTypeColors();
+
+    this.grey = '#cad2c5';
+    this.green = '#84a98c';
+
+    this.keyX = 0;
+    this.keyY = 0;
+
+    this.descX = 15;
+    this.descY = 10;
 
     this.pointsSelected = false;
 
@@ -70,9 +80,7 @@ class LeafletMap {
       center: [39.4, -84],
       zoom: 10,
       layers: [vis.tileLayer1]
-    });
-
-    vis.Legend = document.getElementById('legend');
+    });   
 
     //if you stopped here, you would just have a map
 
@@ -84,13 +92,14 @@ class LeafletMap {
     //handler here for updating the map, as you zoom in and out           
     vis.theMap.on("zoomend", function(){
       vis.updateVis();
-    }).on("moveend", function(){
-      vis.updateVis();
     });
 
+    vis.legend = document.getElementById('legend')
 
     vis.dropdown = document.getElementById('dropdown');
     vis.selected = document.getElementById('selected');
+
+    vis.svgKey = d3.select("#legend").append("svg").attr("width", 300).attr("height", 800)
 
 vis.dropdown.addEventListener('change', function() {
   vis.selected.textContent = dropdown.options[dropdown.selectedIndex].text;
@@ -118,44 +127,57 @@ vis.dropdown.addEventListener('change', function() {
   vis.timeYearBttn =  document.getElementById("timeYear");
   vis.agencyBttn = document.getElementById("agency");
 
+  vis.serviceBttn.style.backgroundColor = vis.green;
+      vis.timeBtwnBttn.style.backgroundColor = vis.grey;
+      vis.timeYearBttn.style.backgroundColor = vis.grey;
+      vis.agencyBttn.style.backgroundColor = vis.grey;
+
     vis.serviceBttn.addEventListener("click", function() 
     {
       vis.setColorType("service");
 
-      vis.serviceBttn.style.backgroundColor = "green";
-      vis.timeBtwnBttn.style.backgroundColor = "grey";
-      vis.timeYearBttn.style.backgroundColor = "grey";
-      vis.agencyBttn.style.backgroundColor = "grey";
+      vis.keyScale = vis.getTypeColors();
+
+      vis.serviceBttn.style.backgroundColor = vis.green;
+      vis.timeBtwnBttn.style.backgroundColor = vis.grey;
+      vis.timeYearBttn.style.backgroundColor = vis.grey;
+      vis.agencyBttn.style.backgroundColor = vis.grey;
       
     });
     vis.timeBtwnBttn.addEventListener("click", function() 
     {
       vis.setColorType("timeBtwn");
 
-      vis.serviceBttn.style.backgroundColor = "grey";
-      vis.timeBtwnBttn.style.backgroundColor = "green";
-      vis.timeYearBttn.style.backgroundColor = "grey";
-      vis.agencyBttn.style.backgroundColor = "grey";
+      vis.keyScale = vis.getTypeColors();
+
+      vis.serviceBttn.style.backgroundColor = vis.grey;
+      vis.timeBtwnBttn.style.backgroundColor = vis.green;
+      vis.timeYearBttn.style.backgroundColor = vis.grey;
+      vis.agencyBttn.style.backgroundColor = vis.grey;
     
     });
     vis.timeYearBttn.addEventListener("click", function() 
     {
       vis.setColorType("timeYear");
 
-      vis.serviceBttn.style.backgroundColor = "grey";
-      vis.timeBtwnBttn.style.backgroundColor = "grey";
-      vis.timeYearBttn.style.backgroundColor = "green";
-      vis.agencyBttn.style.backgroundColor = "grey";
+      vis.keyScale = vis.getTypeColors();
+
+      vis.serviceBttn.style.backgroundColor = vis.grey;
+      vis.timeBtwnBttn.style.backgroundColor = vis.grey;
+      vis.timeYearBttn.style.backgroundColor = vis.green;
+      vis.agencyBttn.style.backgroundColor = vis.grey;
     
     });
     document.getElementById("agency").addEventListener("click", function() 
     {
       vis.setColorType("agency");
 
-      vis.serviceBttn.style.backgroundColor = "grey";
-      vis.timeBtwnBttn.style.backgroundColor = "grey";
-      vis.timeYearBttn.style.backgroundColor = "grey";
-      vis.agencyBttn.style.backgroundColor = "green";
+      vis.keyScale = vis.getTypeColors();
+
+      vis.serviceBttn.style.backgroundColor = vis.grey;
+      vis.timeBtwnBttn.style.backgroundColor = vis.grey;
+      vis.timeYearBttn.style.backgroundColor = vis.grey;
+      vis.agencyBttn.style.backgroundColor = vis.green;
     
     });
 
@@ -165,49 +187,41 @@ vis.dropdown.addEventListener('change', function() {
   updateVis() {
     let vis = this;
 
-    //want to see how zoomed in you are? 
-    // console.log(vis.map.getZoom()); //how zoomed am I
-    
-    //want to control the size of the radius to be a certain number of meters? 
     vis.radiusSize = 3; 
+  
+    vis.keyX = 0;
+    vis.keyY = 0;
 
-    // if( vis.theMap.getZoom > 15 ){
-    //   metresPerPixel = 40075016.686 * Math.abs(Math.cos(map.getCenter().lat * Math.PI/180)) / Math.pow(2, map.getZoom()+8);
-    //   desiredMetersForPoint = 100; //or the uncertainty measure... =) 
-    //   radiusSize = desiredMetersForPoint / metresPerPixel;
-    // }
+    vis.descX = 15;
+    vis.descY = 10;
 
-    console.log(vis.data.filtered)
-    // Array of 0s to hold the data counts for each day
-    vis.data.dayTally = new Array(d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]) + 1).fill(0);
+    vis.keyScale = this.getTypeColors();
 
-    // Max # of calls shown for each day
-    vis.data.dayMax = 250 / d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]);
 
-    // Filter the data for errors, time bounds from timeline brush 
+    vis.Squares = vis.svgKey.selectAll('rect')
+    .data(vis.getTypeKey())
+    .join('rect')
+    .attr("x", function(){return vis.keyX})
+    .attr("y", function(){return vis.keyY = vis.keyY + 15})
+    .attr("width", 10)
+    .attr("height", 10)
+    .attr("fill", function(d){return vis.keyScale(d)})
+    .attr("stroke", "black");
 
-    vis.filteredData = vis.data.filtered.filter(d => vis.theMap.getBounds().contains([d.latitude, d.longitude]))
+    vis.svgKey.selectAll('text')
+    .data(vis.getKeyDescription())
+    .join('text')
+    .attr("x", function(){return vis.descX})
+    .attr("y", function(){return vis.descY = vis.descY + 15})
+    .text(function(d){return d});
 
-    // Then filter the remaining data by counting up the calls for each day and filtering out the excess
-    vis.filteredData = vis.filteredData.filter( d => {
-      let index = d3.timeDay.count(vis.data.filtered[0], vis.data.parseTime(d.REQUESTED_DATETIME));
-      vis.data.dayTally[index]++; 
-      if (vis.data.dayTally[index] > vis.data.dayMax) {
-        return false;
-      }
-      else return true;
-    })
 
-    // console.log(vis.filteredData);
-    // vis.Keys = vis.Legend.selectAll('rect')
-    // .data(vis.setMapTypeKey())
-    // .join('rect')
-    // .attr("fill", function(d){return vis.colorScale(d)})
-    // .attr("stroke", "black");
    
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
-   .data(vis.filteredData) 
+   .data(vis.data.filter( d => {
+	   return (!isNaN(d.longitude) && !isNaN(d.latitude) && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
+   })) 
    .join('circle')
 	   .attr("fill", function(d){return vis.colorScale(vis.getColorInput(d))}) 
 	   .attr("stroke", "black")
@@ -246,12 +260,140 @@ vis.dropdown.addEventListener('change', function() {
 		   d3.select('#tooltip').style('opacity', 0);//turn off the tooltip
 
 		 })
-	   .on('click', (event, d) => { //experimental feature I was trying- click on point and then fly to it
-		  // vis.newZoom = vis.theMap.getZoom()+2;
-		  // if( vis.newZoom > 18)
-		  //  vis.newZoom = 18; 
-		  // vis.theMap.flyTo([d.latitude, d.longitude], vis.newZoom);
+	   .on('click', (event, d) => { 
+
 		 });
+
+  }
+  getKeyDescription(){
+    let vis = this;
+    if(this.color == "service"){
+
+      let serviceData = d3.rollup(vis.data, v => v.length, d => d.SERVICE_NAME);
+      //console.log(planetData);
+
+      const serviceArr = Array.from(serviceData, function(d){return{key: d[0], value: d[1]};});
+      //console.log(planetArr);
+
+      let sorteService = serviceArr.slice().sort((a, b) => d3.descending(a.value, b.value));
+
+      let services = sorteService.map(d => d.key);
+
+      let serviceKey = [];
+
+      let i = 0;
+
+      while (i < 9 && i < services.length){
+        serviceKey.push(services[i]);
+        i = i + 1;
+
+      }
+      serviceKey.push("other");
+      return serviceKey;
+
+
+    }
+    else if(this.color == "timeBtwn"){
+      var times = vis.getAllTimeBetween();
+
+      return [d3.min(times), " ", " ", " ", " ", d3.max(times)];
+
+    }
+    else  if(this.color == "timeYear"){
+      return ["Winter","Spring","Summer","Fall"];
+
+    }
+    else{
+      let agencies = d3.rollup(vis.data, v => v.length, d => d.AGENCY_RESPONSIBLE);
+      //console.log(planetData);
+
+      const agenciesArr = Array.from(agencies, function(d){return{key: d[0], value: d[1]};});
+      //console.log(planetArr);
+
+      let sortedAgencies = agenciesArr.slice().sort((a, b) => d3.ascending(a.key, b.key));
+
+      let agencie = sortedAgencies.map(d => d.key);
+
+      return agencie;
+
+    }
+
+  }
+
+
+  getTypeKey(){
+    let vis = this;
+    if(this.color == "service"){
+
+      let serviceData = d3.rollup(vis.data, v => v.length, d => d.SERVICE_NAME);
+      //console.log(planetData);
+
+      const serviceArr = Array.from(serviceData, function(d){return{key: d[0], value: d[1]};});
+      //console.log(planetArr);
+
+      let sorteService = serviceArr.slice().sort((a, b) => d3.descending(a.value, b.value));
+
+      let services = sorteService.map(d => d.key);
+
+      let serviceKey = [];
+
+      let i = 0;
+
+      while (i < 9 && i < services.length){
+        serviceKey.push(services[i]);
+        i = i + 1;
+
+      }
+      serviceKey.push("other");
+      return serviceKey;
+
+
+    }
+    else if(this.color == "timeBtwn"){
+      return [1,2,3,4,5,6];
+
+    }
+    else  if(this.color == "timeYear"){
+      return [1,2,3,4];
+
+    }
+    else{
+      let agencies = d3.rollup(vis.data, v => v.length, d => d.AGENCY_RESPONSIBLE);
+      //console.log(planetData);
+
+      const agenciesArr = Array.from(agencies, function(d){return{key: d[0], value: d[1]};});
+      //console.log(planetArr);
+
+      let sortedAgencies = agenciesArr.slice().sort((a, b) => d3.ascending(a.key, b.key));
+
+      let agencie = sortedAgencies.map(d => d.key);
+
+      return agencie;
+
+    }
+
+  }
+
+  getTypeColors(){
+    if(this.color == "service"){
+      return d3.scaleOrdinal().domain(this.getTypeKey()).range(["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ab"]);
+
+
+    }
+    else if(this.color == "timeBtwn"){
+      return d3.scaleOrdinal().domain([1,2,3,4,5,6]).range(["#d73027","#fc8d59","#fee08b","#d9ef8b","#91cf60","#1a9850"]);
+      //return ["#d73027","#fc8d59","#fee08b","#d9ef8b","#91cf60","#1a9850"];
+
+    }
+    else if(this.color == "timeYear"){
+      return d3.scaleOrdinal().domain([1,2,3,4]).range(["#2b83ba","#abdda4","#fdae61","#d7191c"]);
+
+    }
+    else{
+      return d3.scaleOrdinal().domain(this.getTypeKey()).range(["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ab"]);
+
+    }
+
 
   }
 
@@ -266,7 +408,9 @@ vis.dropdown.addEventListener('change', function() {
 
       let sorteService = serviceArr.slice().sort((a, b) => d3.descending(a.value, b.value));
 
-      return(sorteService);
+      console.log(sorteService);
+
+      return(sorteService.map(d => d.key));
 
     }
     else if(this.color == "timeBtwn"){
@@ -289,7 +433,7 @@ vis.dropdown.addEventListener('change', function() {
 
       let sortedAgencies = agenciesArr.slice().sort((a, b) => d3.ascending(a.key, b.key));
 
-      return(sortedAgencies);
+      return(sortedAgencies.map(d => d.key));
 
     }
 
