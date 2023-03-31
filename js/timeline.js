@@ -83,8 +83,6 @@ class Timeline {
         // Rollup data to get counts of calls per day
         vis.dayCounts = d3.rollup(vis.data.filter(d => {return d.REQUESTED_DATETIME != ""}), d => d.length, d => d.REQUESTED_DATETIME);
 
-        console.log(vis.dayCounts);
-
         // Structure data to be easily iteratable/sortable
         vis.dataOverTime = [];
         vis.dayCounts.forEach((value, key, map) => {
@@ -127,7 +125,7 @@ class Timeline {
         vis.line = d3.line()
             .x(d => vis.xScale(vis.xValue(d)))
             .y(d => vis.yScale(vis.yValue(d)));
-console.log(vis.dataOverTime);
+            
         // Add line path 
         vis.linePath
             .data([vis.dataOverTime])
@@ -158,9 +156,7 @@ console.log(vis.dataOverTime);
 		// Check if the brush is still active or if it has been removed
 		if (selection) {
 			// Convert given pixel coordinates (range: [x0,x1]) into a time period (domain: [Date, Date])
-            console.log(selection)
 			const selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
-            console.log(selectedDomain)
 			
 			// Call dispatcher to filter all affected charts to show only timestamps within selectedDomain
 			vis.dispatcher.call('filterTime', event, selectedDomain);

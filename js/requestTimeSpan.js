@@ -49,8 +49,11 @@ class RequestTimeSpan {
         vis.xValue = d => d.length
         vis.yValue = d => d.x0
 
+        let binCount = vis.data.filtered.length < 100 ? 5
+            : (vis.data.filtered.length < 1000 ? 10 : 20)
+
         vis.bins = d3.bin()
-        .thresholds(10)
+        .thresholds(binCount)
         .value(d => (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24))
 
 
@@ -58,8 +61,6 @@ class RequestTimeSpan {
 
         vis.xScale.domain([0, d3.max(vis.timeSpan, d => vis.xValue(d))])
         vis.yScale.domain([0, d3.max(vis.timeSpan, d => d.x1)])
-
-        console.log(vis.yScale.domain())
 
         vis.chart.selectAll(".label")        
             .data(vis.timeSpan)
@@ -77,12 +78,15 @@ class RequestTimeSpan {
     renderVis() {
         let vis = this
         //"translate(" + vis.yScale(d.x0) + "," + vis.xScale(d.length) + ")"
+
+        console.log(vis.timeSpan)
+
         vis.bars = vis.chart.selectAll('.bar')
             .data(vis.timeSpan)
             .join('rect')
                 .attr('class', 'bar')
                 .attr('fill', '#cb6543')
-                .attr('height', d => vis.yScale(d.x1) - vis.yScale(d.x0) - 2)
+                .attr('height', d => vis.yScale(d.x1) - vis.yScale(d.x0) - 1)
                 .attr('y', d => vis.yScale(vis.yValue(d)))
             .on('click', (event, d) => {
                 let index = vis.selection.indexOf(d)

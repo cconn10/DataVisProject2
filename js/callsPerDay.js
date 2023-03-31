@@ -47,13 +47,14 @@ class CallsPerDay {
     updateVis() {
         let vis = this
 
+        vis.dayConverter = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
         vis.daysOfTheWeek = Array.from(d3.rollup(vis.data.filtered, d=> d.length, d => d.requestedDate.getDay())).sort()
 
         vis.xValue = d => d[1]
-        vis.yValue = d => isNaN(d[0]) ? "No Request Date" : vis.data.dayConverter[d[0]]
+        vis.yValue = d => vis.dayConverter[d[0]]
 
         vis.xScale.domain([0, d3.max(vis.daysOfTheWeek, d => vis.xValue(d))])
-        vis.yScale.domain(vis.data.dayConverter)
+        vis.yScale.domain(vis.dayConverter)
 
         vis.chart.selectAll(".label")        
             .data(vis.daysOfTheWeek)
@@ -81,6 +82,7 @@ class CallsPerDay {
                 .on('click', (event, d) => {
                     let index = vis.selection.indexOf(d[0])
                     if(index == -1){
+                        console.log(vis.selection)
                         vis.selection.push(d[0])
                         vis.dispatcher.call('filterCallsPerDay', event, vis.selection);
     

@@ -3,22 +3,13 @@ let data;
 // Initialize dispatcher that is used to orchestrate events
 const dispatcher = d3.dispatch('filterTime', 'filterZipcode', 'filterCallsPerDay', 'filterTimeSpan', 'filterServiceName');
 	
-d3.tsv('data/sampleData.tsv')
+d3.tsv('data/Cincy311_2022_final.tsv')
 	.then(_data => {
 		data = _data;
 
-		fullData = _data;
-		// Time parser function to be used by all visualizations
-		data.parseTime = d3.timeParse("%Y-%m-%d");
-		data.filtered = fullData
-        data.dayConverter = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "No Request Date"]
+		let parseTime = d3.timeParse("%Y-%m-%d");
 
-		data.filteredVisualizations = []
-
-		// Initial time filter bounds for all visualizations
-		data.timeBounds = d3.extent(data, d => data.parseTime(d.REQUESTED_DATETIME));
-
-		console.log(data);
+		console.log(data[0]);
 		console.log(data.length);
 		data.forEach(d => {
 			//console.log(d);
@@ -39,11 +30,18 @@ d3.tsv('data/sampleData.tsv')
 				&& parseTime(d.REQUESTED_DATETIME) != null 
 				&& parseTime(d.REQUESTED_DATETIME) >= parseTime("2022-01-01")
 				&& parseTime(d.REQUESTED_DATETIME) <= parseTime("2023-01-01")
+				&& parseTime(d.REQUESTED_DATETIME) <= parseTime(d.UPDATED_DATETIME)
 				&& !isNaN(d.latitude)
 				&& !isNaN(d.longitude)
 			)
 		})
 
+		fullData = data;
+		data.filtered = fullData
+
+		data.filteredVisualizations = []
+
+		console.log(data);
 		// Time parser function to be used by all visualizations
 		data.parseTime = d3.timeParse("%Y-%m-%d");
 
@@ -51,7 +49,6 @@ d3.tsv('data/sampleData.tsv')
 		data.timeBounds = d3.extent(data, d => parseTime(d.REQUESTED_DATETIME));
 
 		// console.log(data[0]);
-		console.log(data.length);
 
 		// Initialize chart and then show it
 		leafletMap = new LeafletMap({ parentElement: '#my-map'}, data);
