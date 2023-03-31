@@ -141,11 +141,11 @@ class Timeline {
 		
 		// Update the brush and define a default position
 		// TODO: change default position to something meaningful?
-		const defaultBrushSelection = [ vis.xScale(d3.min(vis.dataOverTime, d => vis.xValue(d))), 
-                                        vis.xScale(d3.max(vis.dataOverTime, d => vis.xValue(d)))];
+		const defaultBrushSelection = [ vis.xScale(data.parseTime("2022-11-01")), 
+                                        vis.xScale(data.parseTime("2022-11-09"))];
 		vis.brushG
 			.call(vis.brush)
-			//.call(vis.brush.move, defaultBrushSelection);
+			.call(vis.brush.move, defaultBrushSelection);
 	}
 
 	brushed(selection, event) {

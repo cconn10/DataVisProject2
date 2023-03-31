@@ -86,7 +86,7 @@ class RequestTimeSpan {
             .join('rect')
                 .attr('class', 'bar')
                 .attr('fill', '#cb6543')
-                .attr('height', d => vis.yScale(d.x1) - vis.yScale(d.x0) - 1)
+                .attr('height', d => (vis.yScale(d.x1) - vis.yScale(d.x0) != 0 ? vis.yScale(d.x1) - vis.yScale(d.x0) - 1 : 10))
                 .attr('y', d => vis.yScale(vis.yValue(d)))
             .on('click', (event, d) => {
                 let index = vis.selection.indexOf(d)
