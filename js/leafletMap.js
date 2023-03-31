@@ -40,22 +40,31 @@ class LeafletMap {
 
   
     //this is the base map layer, where we are showing the map background
-    vis.base_layer = L.tileLayer(vis.stUrl, {
+    vis.tileLayer1 = L.tileLayer(vis.stUrl, {
       id: 'esri-image',
       attribution: vis.stAttr,
       ext: 'png'
     });
 
-//     vis.base_layer = L.tileLayer('https://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey={apikey}', {
-// 	attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-// 	apikey: '<your apikey>',
-// 	maxZoom: 22
-// });
+    vis.tileLayer2 = 
+    L.tileLayer(vis.esriUrl, {
+      id: 'esri-image',
+      attribution: vis.esriAttr,
+      ext: 'png'
+    });
+
+    vis.tileLayer3 = 
+    L.tileLayer(vis.topoUrl, {
+      id: 'esri-image',
+      attribution: vis.topoAttr,
+      ext: 'png'
+    });
+
 
     vis.theMap = L.map('my-map', {
       center: [39.4, -84],
       zoom: 10,
-      layers: [vis.base_layer]
+      layers: [vis.tileLayer1]
     });
 
     //if you stopped here, you would just have a map
@@ -69,6 +78,41 @@ class LeafletMap {
     vis.theMap.on("zoomend", function(){
       vis.updateVis();
     });
+
+    window.onclick = function(event) {
+      if (!event.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        var i;
+        for (i = 0; i < dropdowns.length; i++) {
+          var openDropdown = dropdowns[i];
+          if (openDropdown.classList.contains('show')) {
+            openDropdown.classList.remove('show');
+          }
+        }
+      }
+    }
+
+    document.getElementById('dropbtn').addEventListener("click", function(){vis.showDropDown()});
+
+    document.getElementById("st").addEventListener("click", function() 
+    {
+      vis.theMap.removeLayer(vis.tileLayer2);
+      vis.theMap.removeLayer(vis.tileLayer3);
+      vis.theMap.addLayer(vis.tileLayer1);
+    });
+    document.getElementById("er").addEventListener("click", function() 
+    {
+      vis.theMap.removeLayer(vis.tileLayer1);
+      vis.theMap.removeLayer(vis.tileLayer3);
+      vis.theMap.addLayer(vis.tileLayer2);
+    });
+    document.getElementById("topo").addEventListener("click", function() 
+    {
+      vis.theMap.removeLayer(vis.tileLayer1);
+      vis.theMap.removeLayer(vis.tileLayer2);
+      vis.theMap.addLayer(vis.tileLayer3);
+    });
+
 
     document.getElementById("service").addEventListener("click", function() {vis.setColorType("service")});
     document.getElementById("timeBtwn").addEventListener("click", function() {vis.setColorType("timeBtwn")});
@@ -143,6 +187,15 @@ class LeafletMap {
 		  // vis.theMap.flyTo([d.latitude, d.longitude], vis.newZoom);
 		 });
 
+  }
+
+  setMapType(type){
+
+  }
+
+  showDropDown(){
+    document.getElementById("myDropdown").classList.toggle("show");
+    
   }
 
   getAllTimeBetween(){
@@ -272,6 +325,7 @@ class LeafletMap {
 
   renderVis() {
     let vis = this;
+    
 
     //not using right now... 
  
