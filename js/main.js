@@ -96,21 +96,31 @@ dispatcher.on('filterTime', selectedDomain => {
 	if (selectedDomain.length == 0) {
 		// Reset  time filter
 		leafletMap.data.filtered = fullData;
+		data.timeBounds = d3.extent(data, d => parseTime(d.REQUESTED_DATETIME));
 	} else {
 		leafletMap.data.filtered = data.filter( d => (selectedDomain[0] <= data.parseTime(d.REQUESTED_DATETIME) 
-		&& data.parseTime(d.REQUESTED_DATETIME) <= selectedDomain[1])) 
-		data.filteredVisualizations.push('')
+		&& data.parseTime(d.REQUESTED_DATETIME) <= selectedDomain[1]))
+
+		leafletMap.data.timeBounds = selectedDomain;
+
+		data.filteredVisualizations = []
+
+		callsPerDay.selection = []
+		zipcode.selection = []
+		requestedTimeSpan.selection = []
+		serviceName.selection = []
 	}
 	updateVisualizations()
 });
 
 dispatcher.on('filterZipcode', selectedDomain => {
+	console.log(selectedDomain)
 	if(selectedDomain.length == 0){
 		leafletMap.data.filtered = fullData;
 		leafletMap.data.filteredVisualizations.splice(leafletMap.data.filteredVisualizations.indexOf('zipcode'), 1)
 	}
 	else {
-		leafletMap.data.filtered = data.filter(d => selectedDomain.includes(d.zipcode))
+		leafletMap.data.filtered = leafletMap.data.filtered.filter(d => selectedDomain.includes(d.zipcode))
 		leafletMap.data.filteredVisualizations.push('zipcode')
 	}
 	updateVisualizations()
@@ -124,8 +134,9 @@ dispatcher.on('filterCallsPerDay', selectedDomain => {
 	}
 	else {
 		console.log(selectedDomain)
-		leafletMap.data.filtered = data.filter(d => selectedDomain.includes(d.requestedDate.getDay()))
+		leafletMap.data.filtered = leafletMap.data.filtered.filter(d => selectedDomain.includes(d.requestedDate.getDay()))
 		leafletMap.data.filteredVisualizations.push('callsPerDay')
+		console.log(leafletMap.data.filtered)
 	}
 	updateVisualizations()
 
@@ -140,9 +151,10 @@ dispatcher.on('filterTimeSpan', selectedDomain => {
 	else {
 		let filteredDomain = d3.extent(selectedDomain.map(d => d.x0).concat(selectedDomain.map(d => d.x1)))
 
-		leafletMap.data.filtered = data.filter(d => (filteredDomain[0] <= (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24)
+		leafletMap.data.filtered = leafletMap.data.filtered.filter(d => (filteredDomain[0] <= (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24)
 			&& (filteredDomain[1] > (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24))))
 		leafletMap.data.filteredVisualizations.push('timeSpan')
+
 	}
 	updateVisualizations()
 });
@@ -154,7 +166,7 @@ dispatcher.on('filterServiceName', selectedDomain => {
 		leafletMap.data.filteredVisualizations.splice(leafletMap.data.filteredVisualizations.indexOf('serviceName'), 1)
 	}
 	else {
-		leafletMap.data.filtered = data.filter(d => selectedDomain.includes(d.serviceName))
+		leafletMap.data.filtered = leafletMap.data.filtered.filter(d => selectedDomain.includes(d.serviceName))
 		leafletMap.data.filteredVisualizations.push('serviceName')
 	}
 	updateVisualizations()

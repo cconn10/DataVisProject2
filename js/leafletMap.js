@@ -140,8 +140,10 @@ vis.dropdown.addEventListener('change', function() {
 
     // Filter the data for errors, time bounds from timeline brush 
 
+    vis.filteredData = vis.data.filtered.filter(d => vis.theMap.getBounds().contains([d.latitude, d.longitude]))
+
     // Then filter the remaining data by counting up the calls for each day and filtering out the excess
-    vis.filteredData = vis.data.filtered.filter( d => {
+    vis.filteredData = vis.filteredData.filter( d => {
       let index = d3.timeDay.count(vis.data.filtered[0], vis.data.parseTime(d.REQUESTED_DATETIME));
       vis.data.dayTally[index]++; 
       if (vis.data.dayTally[index] > vis.data.dayMax) {
