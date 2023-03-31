@@ -107,6 +107,7 @@ class Timeline {
             }
             i++;
         }
+        
 
 		//reusable functions for x and y 
         vis.xValue = d => d.time; 

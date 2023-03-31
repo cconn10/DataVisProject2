@@ -11,8 +11,13 @@ class LeafletMap {
     }
     this.data = _data;
 
-    this.color = "timeBtwn"
+    this.color = "service"
     this.colorScale = this.setColorScale();
+
+    this.pointsSelected = false;
+
+    this.selectedPoints = [];
+
     this.initVis();
   }
   
@@ -67,6 +72,8 @@ class LeafletMap {
       layers: [vis.tileLayer1]
     });
 
+    vis.Legend = document.getElementById('legend');
+
     //if you stopped here, you would just have a map
 
     //initialize svg for d3 to add to map
@@ -75,13 +82,9 @@ class LeafletMap {
     vis.svg = vis.overlay.select('svg').attr("pointer-events", "auto")
     
     //handler here for updating the map, as you zoom in and out           
-    vis.theMap
-      .on("zoomend", function(){
-        vis.updateVis();
-      })
-      .on("moveend", function(){
-        vis.updateVis();
-      });
+    vis.theMap.on("zoomend", function(){
+      vis.updateVis();
+    });
 
 
     vis.dropdown = document.getElementById('dropdown');
@@ -108,10 +111,51 @@ vis.dropdown.addEventListener('change', function() {
   }
 });
 
-    document.getElementById("service").addEventListener("click", function() {vis.setColorType("service")});
-    document.getElementById("timeBtwn").addEventListener("click", function() {vis.setColorType("timeBtwn")});
-    document.getElementById("timeYear").addEventListener("click", function() {vis.setColorType("timeYear")});
-    document.getElementById("agency").addEventListener("click", function() {vis.setColorType("agency")});
+  vis.serviceBttn = document.getElementById("service");
+  vis.timeBtwnBttn = document.getElementById("timeBtwn");
+  vis.timeYearBttn =  document.getElementById("timeYear");
+  vis.agencyBttn = document.getElementById("agency");
+
+    vis.serviceBttn.addEventListener("click", function() 
+    {
+      vis.setColorType("service");
+
+      vis.serviceBttn.style.backgroundColor = "green";
+      vis.timeBtwnBttn.style.backgroundColor = "grey";
+      vis.timeYearBttn.style.backgroundColor = "grey";
+      vis.agencyBttn.style.backgroundColor = "grey";
+      
+    });
+    vis.timeBtwnBttn.addEventListener("click", function() 
+    {
+      vis.setColorType("timeBtwn");
+
+      vis.serviceBttn.style.backgroundColor = "grey";
+      vis.timeBtwnBttn.style.backgroundColor = "green";
+      vis.timeYearBttn.style.backgroundColor = "grey";
+      vis.agencyBttn.style.backgroundColor = "grey";
+    
+    });
+    vis.timeYearBttn.addEventListener("click", function() 
+    {
+      vis.setColorType("timeYear");
+
+      vis.serviceBttn.style.backgroundColor = "grey";
+      vis.timeBtwnBttn.style.backgroundColor = "grey";
+      vis.timeYearBttn.style.backgroundColor = "green";
+      vis.agencyBttn.style.backgroundColor = "grey";
+    
+    });
+    document.getElementById("agency").addEventListener("click", function() 
+    {
+      vis.setColorType("agency");
+
+      vis.serviceBttn.style.backgroundColor = "grey";
+      vis.timeBtwnBttn.style.backgroundColor = "grey";
+      vis.timeYearBttn.style.backgroundColor = "grey";
+      vis.agencyBttn.style.backgroundColor = "green";
+    
+    });
 
 	  vis.updateVis();
   }
@@ -165,7 +209,6 @@ vis.dropdown.addEventListener('change', function() {
    .data(vis.filteredData.filter( d => {
 	   return (!isNaN(d.longitude) && !isNaN(d.latitude) && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
    })) 
-
    .join('circle')
 	   .attr("fill", function(d){return vis.colorScale(vis.getColorInput(d))}) 
 	   .attr("stroke", "black")
@@ -213,7 +256,43 @@ vis.dropdown.addEventListener('change', function() {
 
   }
 
-  setMapType(type){
+  setMapTypeKey(){
+    let vis = this;
+    if(this.color == "service"){
+      let serviceData = d3.rollup(vis.data, v => v.length, d => d.SERVICE_CODE);
+      //console.log(planetData);
+
+      const serviceArr = Array.from(serviceData, function(d){return{key: d[0], value: d[1]};});
+      //console.log(planetArr);
+
+      let sorteService = serviceArr.slice().sort((a, b) => d3.descending(a.value, b.value));
+
+      return(sorteService);
+
+    }
+    else if(this.color == "timeBtwn"){
+      var times = vis.getAllTimeBetween();
+
+      return [d3.min(times), d3.max(times)];
+
+    }
+    else if(this.color == "timeYear"){
+      return [1,2,3,4];
+
+    }
+    else{
+
+      let agencies = d3.rollup(vis.data, v => v.length, d => d.AGENCY_RESPONSIBLE);
+      //console.log(planetData);
+
+      const agenciesArr = Array.from(agencies, function(d){return{key: d[0], value: d[1]};});
+      //console.log(planetArr);
+
+      let sortedAgencies = agenciesArr.slice().sort((a, b) => d3.ascending(a.key, b.key));
+
+      return(sortedAgencies);
+
+    }
 
   }
 
@@ -231,6 +310,8 @@ vis.dropdown.addEventListener('change', function() {
       let t = vis.getTimeBetween(d.REQUESTED_DATETIME, d.UPDATED_DATETIME);
       times.push(t);
     });
+
+    console.log("times between ", times);
 
     return times;
 
@@ -293,12 +374,12 @@ vis.dropdown.addEventListener('change', function() {
 
         var times = vis.getAllTimeBetween();
 
-      return d3.scaleOrdinal().domain([d3.min(times), d3.max(times)]).range(d3.interpolateHslLong("red", "green")(0.5));
+      return d3.scaleOrdinal().domain([d3.min(times), d3.max(times)]).range(["#d73027","#fc8d59","#fee08b","#d9ef8b","#91cf60","#1a9850"]);
 
     }
     else if(vis.color == "timeYear"){
 
-      return d3.scaleOrdinal().domain([1,2,3,4]).range(["blue", "green", "yellow", "orange"]);
+      return d3.scaleOrdinal().domain([1,2,3,4]).range(["#2b83ba","#abdda4","#fdae61","#d7191c"]);
 
     }
     else{

@@ -7,8 +7,8 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 	.then(_data => {
 		data = _data;
 
-		// Local time parser function for initial filtering
-		let parseTime = d3.timeParse("%Y-%m-%d");
+		// Time parser function for initial filtering
+		parseTime = d3.timeParse("%Y-%m-%d");
 
 		data.forEach(d => {
 			//console.log(d);
@@ -60,12 +60,11 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 
 dispatcher.on('filterTime', selectedDomain => {
 	if (selectedDomain.length == 0) {
-		// Reset time filter
+		// Reset  time filter
 		leafletMap.data.timeBounds = d3.extent(data, d => data.parseTime(d.REQUESTED_DATETIME));
 	} else {
 		leafletMap.data.timeBounds = selectedDomain;
 	}
-	// console.log(leafletMap.data.timeBounds);
 	leafletMap.updateVis();
 	heatmap.updateVis();
 });
