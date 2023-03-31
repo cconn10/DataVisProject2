@@ -393,7 +393,7 @@ vis.dropdown.addEventListener('change', function() {
 
     }
     else if(this.color == "timeBtwn"){
-      return d3.scaleOrdinal().domain([1,2,3,4,5,6]).range(["#d73027","#fc8d59","#fee08b","#d9ef8b","#91cf60","#1a9850"]);
+      return d3.scaleOrdinal().domain([1,2,3,4,5,6]).range(["#1a9850", "#91cf60", "#d9ef8b", "#fee08b", "#fc8d59", "#d73027"]);
       //return ["#d73027","#fc8d59","#fee08b","#d9ef8b","#91cf60","#1a9850"];
 
     }
@@ -529,7 +529,7 @@ vis.dropdown.addEventListener('change', function() {
 
         var times = vis.getAllTimeBetween();
 
-      return d3.scaleOrdinal().domain([d3.min(times), d3.max(times)]).range(["#d73027","#fc8d59","#fee08b","#d9ef8b","#91cf60","#1a9850"]);
+      return d3.scaleOrdinal().domain([d3.min(times), d3.max(times)]).range(["#1a9850", "#91cf60", "#d9ef8b", "#fee08b", "#fc8d59", "#d73027"]);
 
     }
     else if(vis.color == "timeYear"){
