@@ -136,6 +136,27 @@ class Heatmap {
                 .attr('width', xWidth)
                 .attr('x', d => vis.xScale(d3.timeSunday.floor(vis.xValue(d))) - xWidth/2)
                 .attr('y', d => vis.yScale(vis.dayOfWeek[d3.timeDay.count(d3.timeSunday.floor(vis.xValue(d)), vis.xValue(d))]))
+                .on('mouseenter', (event, d) => {
+                    let tooltipText = `
+                        <div class="tooltip-label">${vis.formatTime(d.time)}</div>
+                        <div class="tooltip-label">${d.val} Calls</div>
+                    `;
+
+                    d3.select('#tooltip')
+                        .style('opacity', 1)
+                        .style('display', 'block')
+                        .style('text-align', 'center')
+                        .html(tooltipText);
+                })
+                .on('mousemove', () => {
+                    d3.select('#tooltip')
+                        .style('left', (event.pageX + 10) + 'px')   
+                        .style('top', (event.pageY + 10) + 'px');
+                })
+                .on('mouseleave', () => {
+                    d3.select('#tooltip').style('opacity', 0);
+                })
+		   
 		
         if (d3.timeSunday.count(vis.xDomain[0], vis.xDomain[1]) > 20) vis.xAxis.ticks(d3.timeSunday.every(2));
         else vis.xAxis.ticks(d3.timeSunday.every(1));
@@ -145,5 +166,17 @@ class Heatmap {
         vis.yAxisG.call(vis.yAxis);
 		
 	}
+
+    tooltipDisplay(event, d) {
+        let vis = this;
+        let tooltipText = `<p class="tip-text">${vis.data.formatTime(d.time)}: ${d.val} Calls</p>`;
+
+        d3.select('#tooltip')
+            .style('display', 'block')
+            .style('text-align', 'center')
+            .style('left', (event.pageX + 2) + 'px')   
+            .style('top', (event.pageY + 2) + 'px')
+            .html(tooltipText);
+    }
 
 }
