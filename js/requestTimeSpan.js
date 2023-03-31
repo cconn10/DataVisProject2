@@ -19,6 +19,8 @@ class RequestTimeSpan {
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom
 
+        vis.selection = []
+
         vis.chart = d3.select(vis.config.parentElement)
             .attr('width', vis.config.containerWidth )
             .attr('height', vis.config.containerHeight)
@@ -27,9 +29,8 @@ class RequestTimeSpan {
         
         vis.xScale = d3.scaleLinear()
             .range([0, vis.width])
-        vis.yScale = d3.scaleBand()
+        vis.yScale = d3.scaleLinear()
             .range([0, vis.height])
-            .paddingInner(0.15)
 
         vis.xAxis = d3.axisBottom(vis.xScale)
         vis.yAxis = d3.axisLeft(vis.yScale)
@@ -45,26 +46,28 @@ class RequestTimeSpan {
     updateVis() {
         let vis = this
 
-        vis.xValue = d => d[1]
-        vis.yValue = d => d[0]
+        vis.xValue = d => d.length
+        vis.yValue = d => d.x0
 
-        vis.timeSpan = d3.rollup(vis.data, d=> d.length, d => (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24))
+        vis.bins = d3.bin()
+        .thresholds(10)
+        .value(d => (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24))
 
-        for(let i = 0; i < d3.max(vis.timeSpan, d => vis.yValue(d)); i++){
-            if(!Array.from(vis.timeSpan.keys()).includes(i))
-                vis.timeSpan.set(i, 0)
-        }
-        vis.timeSpan = Array.from(vis.timeSpan)
+
+        vis.timeSpan = vis.bins(vis.data.filtered)
 
         vis.xScale.domain([0, d3.max(vis.timeSpan, d => vis.xValue(d))])
-        vis.yScale.domain(vis.timeSpan.map(d => vis.yValue(d)).sort((a,b) => a-b))
+        vis.yScale.domain([0, d3.max(vis.timeSpan, d => d.x1)])
+
+        console.log(vis.yScale.domain())
 
         vis.chart.selectAll(".label")        
             .data(vis.timeSpan)
             .join("text")
                 .attr("class","label")
+                .attr("y", d => ((vis.yScale(d.x1) + vis.yScale(d.x0)) / 2))
+                .transition()
                 .attr("x", d => vis.xScale(vis.xValue(d)))
-                .attr("y", d => (vis.yScale(vis.yValue(d)) + (vis.yScale.bandwidth() / 2)))
                 .attr("dy", ".75em")
                 .text(d => vis.xValue(d) > 0 ? vis.xValue(d) : "");
 
@@ -73,17 +76,38 @@ class RequestTimeSpan {
 
     renderVis() {
         let vis = this
-
+        //"translate(" + vis.yScale(d.x0) + "," + vis.xScale(d.length) + ")"
         vis.bars = vis.chart.selectAll('.bar')
             .data(vis.timeSpan)
             .join('rect')
                 .attr('class', 'bar')
-                .attr('fill', '#4FB062')
-                .attr('width', d => vis.xScale(vis.xValue(d)))
-                .attr('height', vis.yScale.bandwidth())
+                .attr('fill', '#cb6543')
+                .attr('height', d => vis.yScale(d.x1) - vis.yScale(d.x0) - 2)
                 .attr('y', d => vis.yScale(vis.yValue(d)))
-                .attr('x', 0)
+            .on('click', (event, d) => {
+                let index = vis.selection.indexOf(d)
+                if(index == -1){
+                    vis.selection.push(d)
+                    console.log(vis.selection)
+                    vis.dispatcher.call('filterTimeSpan', event, vis.selection);
 
+                    vis.bars
+                        .transition()
+                        .attr('fill', d=> vis.selection.includes(d) ? '#9e3715' : '#cb6543')
+                }
+                else{
+                    vis.selection.splice(index, 1)
+                    vis.dispatcher.call('filterTimeSpan', event, vis.selection);
+                    
+                    vis.bars
+                        .transition()
+                        .attr('fill', d=> vis.selection.includes(d) ? '#9e3715' : '#cb6543')
+                }
+            })
+
+            vis.bars.transition()
+            .attr('width', d => vis.xScale(vis.xValue(d)))
+            .attr('x', 0)
                 
         vis.xAxisG.call(vis.xAxis)
         vis.yAxisG.call(vis.yAxis)

@@ -1,19 +1,24 @@
 let data;
 
 // Initialize dispatcher that is used to orchestrate events
-const dispatcher = d3.dispatch('filterTime');
+const dispatcher = d3.dispatch('filterTime', 'filterZipcode', 'filterCallsPerDay', 'filterTimeSpan', 'filterServiceName');
 	
 d3.tsv('data/sampleData.tsv')
 	.then(_data => {
 		data = _data;
 
+		fullData = _data;
 		// Time parser function to be used by all visualizations
 		data.parseTime = d3.timeParse("%Y-%m-%d");
+		data.filtered = fullData
+        data.dayConverter = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "No Request Date"]
+
+		data.filteredVisualizations = []
 
 		// Initial time filter bounds for all visualizations
 		data.timeBounds = d3.extent(data, d => data.parseTime(d.REQUESTED_DATETIME));
 
-		console.log(data[0]);
+		console.log(data);
 		console.log(data.length);
 		data.forEach(d => {
 			//console.log(d);
@@ -72,10 +77,79 @@ d3.tsv('data/sampleData.tsv')
 dispatcher.on('filterTime', selectedDomain => {
 	if (selectedDomain.length == 0) {
 		// Reset  time filter
-		leafletMap.data.timeBounds = d3.extent(data, d => data.parseTime(d.REQUESTED_DATETIME));
+		leafletMap.data.filtered = fullData;
 	} else {
-		console.log(selectedDomain);
-		leafletMap.data.timeBounds = selectedDomain;
+		leafletMap.data.filtered = data.filter( d => (selectedDomain[0] <= data.parseTime(d.REQUESTED_DATETIME) 
+		&& data.parseTime(d.REQUESTED_DATETIME) <= selectedDomain[1])) 
+		data.filteredVisualizations.push('')
 	}
-	leafletMap.updateVis();
+	updateVisualizations()
 });
+
+dispatcher.on('filterZipcode', selectedDomain => {
+	if(selectedDomain.length == 0){
+		leafletMap.data.filtered = fullData;
+		leafletMap.data.filteredVisualizations.splice(leafletMap.data.filteredVisualizations.indexOf('zipcode'), 1)
+	}
+	else {
+		leafletMap.data.filtered = data.filter(d => selectedDomain.includes(d.zipcode))
+		leafletMap.data.filteredVisualizations.push('zipcode')
+	}
+	updateVisualizations()
+
+});
+
+dispatcher.on('filterCallsPerDay', selectedDomain => {
+	if(selectedDomain.length == 0){
+		leafletMap.data.filtered = fullData;
+		leafletMap.data.filteredVisualizations.splice(leafletMap.data.filteredVisualizations.indexOf('callsPerDay'), 1)
+	}
+	else {
+		console.log(selectedDomain)
+		leafletMap.data.filtered = data.filter(d => selectedDomain.includes(d.requestedDate.getDay()))
+		leafletMap.data.filteredVisualizations.push('callsPerDay')
+	}
+	updateVisualizations()
+
+});
+
+
+dispatcher.on('filterTimeSpan', selectedDomain => {
+	if(selectedDomain.length == 0){
+		leafletMap.data.filtered = fullData;
+		leafletMap.data.filteredVisualizations.splice(leafletMap.data.filteredVisualizations.indexOf('timeSpan'), 1)
+	}
+	else {
+		let filteredDomain = d3.extent(selectedDomain.map(d => d.x0).concat(selectedDomain.map(d => d.x1)))
+
+		leafletMap.data.filtered = data.filter(d => (filteredDomain[0] <= (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24)
+			&& (filteredDomain[1] > (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24))))
+		leafletMap.data.filteredVisualizations.push('timeSpan')
+	}
+	updateVisualizations()
+});
+
+
+dispatcher.on('filterServiceName', selectedDomain => {
+	if(selectedDomain.length == 0){
+		leafletMap.data.filtered = fullData;
+		leafletMap.data.filteredVisualizations.splice(leafletMap.data.filteredVisualizations.indexOf('serviceName'), 1)
+	}
+	else {
+		leafletMap.data.filtered = data.filter(d => selectedDomain.includes(d.serviceName))
+		leafletMap.data.filteredVisualizations.push('serviceName')
+	}
+	updateVisualizations()
+});
+
+function updateVisualizations() {
+	leafletMap.updateVis();
+	if(!data.filteredVisualizations.includes('callsPerDay'))
+		callsPerDay.updateVis();
+	if(!data.filteredVisualizations.includes('zipcode'))
+		zipcode.updateVis();
+	if(!data.filteredVisualizations.includes('serviceName'))
+		serviceName.updateVis();
+	if(!data.filteredVisualizations.includes('timeSpan'))
+		requestedTimeSpan.updateVis();
+}

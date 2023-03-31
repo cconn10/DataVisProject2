@@ -19,6 +19,8 @@ class ServiceName {
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom
 
+        vis.selection = []
+
         vis.chart = d3.select(vis.config.parentElement)
             .attr('width', vis.config.containerWidth )
             .attr('height', vis.config.containerHeight)
@@ -45,20 +47,41 @@ class ServiceName {
     updateVis() {
         let vis = this
 
-        vis.serviceNames = Array.from(d3.rollup(vis.data, d=> d.length, d => d.serviceName)).sort()
+        let otherCount = 0
+        let shiftCount = 0
+
+        vis.serviceNames = Array.from(d3.rollup(vis.data.filtered, d=> d.length, d => d.serviceName)).sort((a, b) => a[1] - b[1])
+
+        vis.serviceNames.forEach(value => {
+            if(value[1] < (vis.data.filtered.length / 100)){
+                otherCount += value[1]
+                shiftCount += 1
+            }
+        })
+
+        for (let i = 0; i < shiftCount; i++){
+            vis.serviceNames.shift()
+        }
+
+        if(otherCount > 0)
+            vis.serviceNames.push(["Other", otherCount])
+
+        vis.serviceNames.sort()
 
         vis.xValue = d => d[1]
         vis.yValue = d => d[0]
 
+
         vis.xScale.domain([0, d3.max(vis.serviceNames, d => vis.xValue(d))])
         vis.yScale.domain((vis.serviceNames.map(m => vis.yValue(m))))
 
-        vis.chart.selectAll(".label")        
+        vis.chart.selectAll(".label")     
             .data(vis.serviceNames)
             .join("text")
                 .attr("class","label")
-                .attr("x", d => vis.xScale(vis.xValue(d)))
                 .attr("y", d => (vis.yScale(vis.yValue(d)) + (vis.yScale.bandwidth() / 2)))
+                .transition()
+                .attr("x", d => vis.xScale(vis.xValue(d)))
                 .attr("dy", ".75em")
                 .text(d => vis.xValue(d));
 
@@ -72,11 +95,28 @@ class ServiceName {
             .data(vis.serviceNames)
             .join('rect')
                 .attr('class', 'bar')
-                .attr('fill', '#4FB062')
-                .attr('width', d => vis.xScale(vis.xValue(d)))
-                .attr('height', vis.yScale.bandwidth())
+                .attr('fill', '#cb6543')
                 .attr('y', d => vis.yScale(vis.yValue(d)))
-                .attr('x', 0)
+                .attr('height', vis.yScale.bandwidth())
+            .on('click', (event, d) => {
+                let index = vis.selection.indexOf(d[0])
+                if(index == -1){
+                    vis.selection.push(d[0])
+                    vis.dispatcher.call('filterServiceName', event, vis.selection);
+
+                    vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
+                }
+                else{
+                    vis.selection.splice(index, 1)
+                    vis.dispatcher.call('filterServiceName', event, vis.selection);
+
+                    vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
+                }
+            })
+
+            vis.bars.transition()
+            .attr('width', d => vis.xScale(vis.xValue(d)))
+            .attr('x', 0)
 
                 
         vis.xAxisG.call(vis.xAxis)

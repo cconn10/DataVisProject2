@@ -19,6 +19,8 @@ class Zipcode {
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom
 
+        vis.selection = []
+
         vis.chart = d3.select(vis.config.parentElement)
             .attr('width', vis.config.containerWidth )
             .attr('height', vis.config.containerHeight)
@@ -45,10 +47,30 @@ class Zipcode {
     updateVis() {
         let vis = this
 
+        let otherCount = 0
+        let shiftCount = 0
+
         vis.xValue = d => d[1]
         vis.yValue = d => d[0]
 
-        vis.zipcode = Array.from(d3.rollup(vis.data, d=> d.length, d => d.zipcode))
+        vis.zipcode = Array.from(d3.rollup(vis.data.filtered, d=> d.length, d => d.zipcode)).sort((a, b) => a[1] - b[1])
+
+        vis.zipcode.forEach(value => {
+
+            if(value[1] < (vis.data.filtered.length / 100)){
+                otherCount += value[1]
+                shiftCount += 1
+            }
+        })
+
+        for (let i = 0; i < shiftCount; i++){
+            vis.zipcode.shift()
+        }
+
+        if(otherCount > 0)
+            vis.zipcode.push(["Other", otherCount])
+
+        vis.zipcode.sort()
 
         vis.xScale.domain([0, d3.max(vis.zipcode, d => vis.xValue(d))])
         vis.yScale.domain(vis.zipcode.map(d => vis.yValue(d)).sort((a,b) => a-b))
@@ -57,8 +79,9 @@ class Zipcode {
             .data(vis.zipcode)
             .join("text")
                 .attr("class","label")
-                .attr("x", d => vis.xScale(vis.xValue(d)))
                 .attr("y", d => (vis.yScale(vis.yValue(d)) + (vis.yScale.bandwidth() / 2)))
+                .transition()
+                .attr("x", d => vis.xScale(vis.xValue(d)))
                 .attr("dy", ".75em")
                 .text(d => vis.xValue(d));
 
@@ -72,11 +95,28 @@ class Zipcode {
             .data(vis.zipcode)
             .join('rect')
                 .attr('class', 'bar')
-                .attr('fill', '#4FB062')
-                .attr('width', d => vis.xScale(vis.xValue(d)))
+                .attr('fill', '#cb6543')
                 .attr('height', vis.yScale.bandwidth())
                 .attr('y', d => vis.yScale(vis.yValue(d)))
-                .attr('x', 0)
+            .on('click', (event, d) => {
+                let index = vis.selection.indexOf(d[0])
+                if(index == -1){
+                    vis.selection.push(d[0])
+                    vis.dispatcher.call('filterZipcode', event, vis.selection);
+
+                    vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
+                }
+                else{
+                    vis.selection.splice(index, 1)
+                    vis.dispatcher.call('filterZipcode', event, vis.selection);
+
+                    vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
+                }
+            })
+            
+            vis.bars.transition()
+            .attr('width', d => vis.xScale(vis.xValue(d)))
+            .attr('x', 0)
 
                 
         vis.xAxisG.call(vis.xAxis)

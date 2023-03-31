@@ -154,7 +154,9 @@ class Timeline {
 		// Check if the brush is still active or if it has been removed
 		if (selection) {
 			// Convert given pixel coordinates (range: [x0,x1]) into a time period (domain: [Date, Date])
+            console.log(selection)
 			const selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
+            console.log(selectedDomain)
 			
 			// Call dispatcher to filter all affected charts to show only timestamps within selectedDomain
 			vis.dispatcher.call('filterTime', event, selectedDomain);

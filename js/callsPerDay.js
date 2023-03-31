@@ -19,6 +19,8 @@ class CallsPerDay {
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom
 
+        vis.selection = []
+
         vis.chart = d3.select(vis.config.parentElement)
             .attr('width', vis.config.containerWidth )
             .attr('height', vis.config.containerHeight)
@@ -45,22 +47,21 @@ class CallsPerDay {
     updateVis() {
         let vis = this
 
-        vis.daysOfTheWeek = Array.from(d3.rollup(vis.data, d=> d.length, d => d.requestedDate.getDay())).sort()
-
-        vis.dayConverter = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        vis.daysOfTheWeek = Array.from(d3.rollup(vis.data.filtered, d=> d.length, d => d.requestedDate.getDay())).sort()
 
         vis.xValue = d => d[1]
-        vis.yValue = d => vis.dayConverter[d[0]]
+        vis.yValue = d => isNaN(d[0]) ? "No Request Date" : vis.data.dayConverter[d[0]]
 
         vis.xScale.domain([0, d3.max(vis.daysOfTheWeek, d => vis.xValue(d))])
-        vis.yScale.domain((vis.daysOfTheWeek.map(m => vis.yValue(m))))
+        vis.yScale.domain(vis.data.dayConverter)
 
         vis.chart.selectAll(".label")        
             .data(vis.daysOfTheWeek)
             .join("text")
                 .attr("class","label")
+                .attr("y", d => (vis.yScale(vis.yValue(d)) + (vis.yScale.bandwidth() / 2)))
+                .transition()
                 .attr("x", d => vis.xScale(vis.xValue(d)))
-                .attr("y", d => vis.yScale(vis.yValue(d)))
                 .attr("dy", ".75em")
                 .text(d => vis.xValue(d));
 
@@ -74,13 +75,29 @@ class CallsPerDay {
             .data(vis.daysOfTheWeek)
             .join('rect')
                 .attr('class', 'bar')
-                .attr('fill', '#4FB062')
-                .attr('width', d => vis.xScale(vis.xValue(d)))
+                .attr('fill', '#cb6543')
                 .attr('height', vis.yScale.bandwidth())
-                .attr('y', d => vis.yScale(vis.yValue(d)) )
+                .attr('y', d => vis.yScale(vis.yValue(d)))
+                .on('click', (event, d) => {
+                    let index = vis.selection.indexOf(d[0])
+                    if(index == -1){
+                        vis.selection.push(d[0])
+                        vis.dispatcher.call('filterCallsPerDay', event, vis.selection);
+    
+                        vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
+                    }
+                    else{
+                        vis.selection.splice(index, 1)
+                        vis.dispatcher.call('filterCallsPerDay', event, vis.selection);
+                        
+                        vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
+                    }
+                })
+
+                vis.bars.transition()
+                .attr('width', d => vis.xScale(vis.xValue(d)))
                 .attr('x', 0)
 
-                
         vis.xAxisG.call(vis.xAxis)
         vis.yAxisG.call(vis.yAxis)
     }
