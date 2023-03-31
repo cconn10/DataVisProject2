@@ -147,7 +147,6 @@ class Timeline {
 		vis.brushG
 			.call(vis.brush)
 			.call(vis.brush.move, defaultBrushSelection);
-			.call(vis.brush.move, defaultBrushSelection);
 	}
 
 	brushed(selection, brushEnd, event) {
