@@ -241,8 +241,20 @@ vis.dropdown.addEventListener('change', function() {
 		   d3.select('#tooltip')
 			   .style('opacity', 1)
 			   .style('z-index', 1000000)
+         .html(`
+        <div><h>Service: ${d.SERVICE_NAME}<h><div>
+        <div><h>Agency Responsible: ${d.AGENCY_RESPONSIBLE}<h><div>
+        <div>Request Date: ${(d.REQUESTED_DATETIME)},   Update Date: ${(d.UPDATED_DATETIME)}</div>
+        <div> Description: ${(d.DESCRIPTION)}</div>
+      `).attr("class", "tooltip")
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "2px")
+      .style("border-radius", "5px")
+      .style("padding", "5px")
+      .style("position", "absolute");
 				 // Format number with million and thousand separator
-			   .html(`<div class="tooltip-label">Service: ${d.SERVICE_NAME}, \n Description: ${(d.DESCRIPTION)} ,\n Request Time:: ${(d.REQUESTED_DATETIME)}, \n Agency: ${d.AGENCY_RESPONSIBLE}</div>`);
+			  // .html(`<div class="tooltip-label">Service: ${d.SERVICE_NAME},  \n Agency Responsible: ${d.AGENCY_RESPONSIBLE} ,\n Request Time: ${(d.REQUESTED_DATETIME)},   Update Time: ${(d.UPDATED_DATETIME)}, \n Description: ${(d.DESCRIPTION)}</div>`);
 
 		 })
 	   .on('mousemove', (event) => {
@@ -296,7 +308,7 @@ vis.dropdown.addEventListener('change', function() {
     else if(this.color == "timeBtwn"){
       var times = vis.getAllTimeBetween();
 
-      return [d3.min(times), " ", " ", " ", " ", d3.max(times)];
+      return [d3.min(times) + 'ms', " ", " ", " ", " ", d3.max(times) + 'ms'];
 
     }
     else  if(this.color == "timeYear"){
