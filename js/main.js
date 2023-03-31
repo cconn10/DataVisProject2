@@ -40,6 +40,13 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 		// Initialize chart and then show it
 		leafletMap = new LeafletMap({ parentElement: '#my-map'}, data);
 
+		heatmap = new Heatmap({
+			'parentElement': '#heatmap',
+			'containerHeight': 500,
+			'containerWidth': 1500
+		}, dispatcher, data);
+		heatmap.updateVis();
+
 		timeline = new Timeline({
 			'parentElement': '#timeline',
 			'containerHeight': 100,
@@ -58,6 +65,7 @@ dispatcher.on('filterTime', selectedDomain => {
 	} else {
 		leafletMap.data.timeBounds = selectedDomain;
 	}
-	console.log(leafletMap.data.timeBounds);
+	// console.log(leafletMap.data.timeBounds);
 	leafletMap.updateVis();
+	heatmap.updateVis();
 });

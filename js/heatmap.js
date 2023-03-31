@@ -1,4 +1,4 @@
-class Timeline {
+class Heatmap {
     constructor(_config, _dispatcher, _data) {
         this.config = {
 			parentElement: _config.parentElement,
@@ -37,7 +37,7 @@ class Timeline {
 		vis.chart = vis.svg.append('g')
         .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
 
-        // Initialize line
+        // Initialize line as part of the "marks" group
         vis.linePath = vis.chart.append('path')
             .attr('class', 'chart-line');
 
@@ -45,8 +45,14 @@ class Timeline {
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
         
-        vis.yScale = d3.scaleLinear()
-            .range([vis.height, 0]);
+        vis.yScale = d3.scaleBand()
+            .domain(["Sun", "Mon", "Tues", "Weds", "Thurs", "Fri", "Sat"])
+            .range([0, vis.height]);
+
+        vis.colorScale = d3.scaleSequential()
+            .interpolator(d3.interpolateYlOrRd);
+
+        vis.dayOfWeek = { 0: "Sun", 1: "Mon", 2: "Tues", 3: "Weds", 4: "Thurs", 5: "Fri", 6: "Sat" };
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
@@ -63,26 +69,19 @@ class Timeline {
         vis.yAxisG = vis.chart.append('g')
             .attr('class', 'axis y-axis');
 
-		// Initialize brush component
-		vis.brush = d3.brushX()
-			.extent([[0, 0], [vis.width, vis.height - 1]])
-			.on('brush', function({selection}, event) {
-				if (selection) vis.brushed(selection, false, event);
-			})
-			.on('end', function({selection}, event) {
-				if (!selection) vis.brushed(null, true, event);
-                else vis.brushed(selection, true, event);
-			});	
-
-		vis.brushG = vis.chart.append('g')
-			.attr('class', 'brush x-brush');
 	}
 
 	updateVis() {
         let vis = this;
 
         // Rollup data to get counts of calls per day
-        vis.dayCounts = d3.rollup(vis.data.filter(d => {return d.REQUESTED_DATETIME != ""}), d => d.length, d => d.REQUESTED_DATETIME);
+        vis.dayCounts = d3.rollup(vis.data.filter(d => {
+                return (
+                    d.REQUESTED_DATETIME != ""
+                    && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) 
+                    && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1]
+                )
+            }), d => d.length, d => d.REQUESTED_DATETIME);
 
         // Structure data to be easily iteratable/sortable
         vis.dataOverTime = [];
@@ -105,16 +104,17 @@ class Timeline {
             if (!vis.dayCounts.has(vis.formatTime(day))) {
                 vis.dataOverTime.splice(i, 0, {"time": day, "val": 0});
             }
+            console.log(vis.dayOfWeek[d3.timeDay.count(d3.timeSunday.floor(day), day)]);
             i++;
         }
 
 		//reusable functions for x and y 
         vis.xValue = d => d.time; 
-        vis.yValue = d => d.val;
+        vis.colorValue = d => d.val;
 
         // Set scale domains with processed data
-        vis.xScale.domain(d3.extent(vis.dataOverTime, d => vis.xValue(d)));
-        vis.yScale.domain(d3.extent(vis.dataOverTime, d => vis.yValue(d)));
+        vis.xScale.domain([d3.min(vis.dataOverTime, d => d3.timeSunday.floor(vis.xValue(d))), d3.max(vis.dataOverTime, d => d3.timeSunday.ceil(vis.xValue(d)))]);
+        vis.colorScale.domain(d3.extent(vis.dataOverTime, d => vis.colorValue(d)));
 
 		vis.renderVis();
 	}
@@ -122,50 +122,20 @@ class Timeline {
 	renderVis() {
 		let vis = this;
 
-        // Initialize line generator helper function
-        vis.line = d3.line()
-            .x(d => vis.xScale(vis.xValue(d)))
-            .y(d => vis.yScale(vis.yValue(d)));
-
-        // Add line path 
-        vis.linePath
-            .data([vis.dataOverTime])
-            .attr('stroke',  'steelblue')
-            .attr('stroke-width', 2)
-            .attr('fill', 'none')
-            .attr('d', vis.line);
+        // TODO
+        vis.squares = vis.chart.selectAll('.square')
+            .data(vis.dataOverTime)
+            .join('rect')
+                .attr('fill', d => vis.colorScale(vis.colorValue(d)))
+                .attr('height', d => vis.yScale.bandwidth())
+                .attr('width', d => vis.xScale(new Date(2000, 0, 7)) - vis.xScale(new Date(2000, 0, 0)))
+                .attr('x', d => vis.xScale(d3.timeSunday.floor(vis.xValue(d))))
+                .attr('y', d => vis.yScale(vis.dayOfWeek[d3.timeDay.count(d3.timeSunday.floor(vis.xValue(d)), vis.xValue(d))]))
 		
 		// Update axis
 		vis.xAxisG.call(vis.xAxis);
         vis.yAxisG.call(vis.yAxis);
 		
-		// Update the brush and define a default position
-		// TODO: change default position to something meaningful?
-		// const defaultBrushSelection = [ vis.xScale(d3.min(vis.dataOverTime, d => vis.xValue(d))), 
-        //                                 vis.xScale(d3.max(vis.dataOverTime, d => vis.xValue(d)))];
-
-        const defaultBrushSelection = [ vis.xScale(data.parseTime("2022-11-01")), 
-                                        vis.xScale(data.parseTime("2022-11-09"))];
-		vis.brushG
-			.call(vis.brush)
-			.call(vis.brush.move, defaultBrushSelection);
 	}
 
-	brushed(selection, brushEnd, event) {
-		let vis = this;
-	
-		// Check if the brush is still active or if it has been removed
-		if (selection) {
-			// Convert given pixel coordinates (range: [x0,x1]) into a time period (domain: [Date, Date])
-			const selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
-			
-			// Call dispatcher to filter all affected charts to show only timestamps within selectedDomain
-			vis.dispatcher.call('filterTime', event, selectedDomain);
-		}
-		else {
-			// Reset x-scale of all affected charts
-			vis.dispatcher.call('filterTime', event, vis.xScale.domain());
-		}
-
-	}
 }

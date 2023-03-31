@@ -95,7 +95,7 @@ class LeafletMap {
     // Max # of calls shown for each day
     vis.data.dayMax = 250 / d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]);
 
-    // Filter the data for errors, time bounds from timeline brush 
+    // Filter the data for errors, time bounds from timeline brush, and whether the current map view includes the lat/long
     vis.filteredData = vis.data.filter( d => {
       return (
           !isNaN(d.latitude) 
