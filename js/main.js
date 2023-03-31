@@ -32,6 +32,27 @@ d3.tsv('data/sampleData.tsv')
 			d.zipcode = d.ZIPCODE
 		});
 
+		// Initial filtering to remove bad data - missing or improperly formatted datetime, broken lat/long
+		data = data.filter(d => {
+			return (
+				d.REQUESTED_DATETIME != ""
+				&& parseTime(d.REQUESTED_DATETIME) != null 
+				&& parseTime(d.REQUESTED_DATETIME) >= parseTime("2022-01-01")
+				&& parseTime(d.REQUESTED_DATETIME) <= parseTime("2023-01-01")
+				&& !isNaN(d.latitude)
+				&& !isNaN(d.longitude)
+			)
+		})
+
+		// Time parser function to be used by all visualizations
+		data.parseTime = d3.timeParse("%Y-%m-%d");
+
+		// Initial time filter bounds for all visualizations
+		data.timeBounds = d3.extent(data, d => parseTime(d.REQUESTED_DATETIME));
+
+		// console.log(data[0]);
+		console.log(data.length);
+
 		// Initialize chart and then show it
 		leafletMap = new LeafletMap({ parentElement: '#my-map'}, data);
 		

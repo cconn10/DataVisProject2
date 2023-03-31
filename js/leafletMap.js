@@ -40,22 +40,31 @@ class LeafletMap {
 
   
     //this is the base map layer, where we are showing the map background
-    vis.base_layer = L.tileLayer(vis.stUrl, {
-      id: 'esri-image',
+    vis.tileLayer1 = L.tileLayer(vis.stUrl, {
+      id: 'st-image',
       attribution: vis.stAttr,
       ext: 'png'
     });
 
-//     vis.base_layer = L.tileLayer('https://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey={apikey}', {
-// 	attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-// 	apikey: '<your apikey>',
-// 	maxZoom: 22
-// });
+    vis.tileLayer2 = 
+    L.tileLayer(vis.esriUrl, {
+      id: 'esri-image',
+      attribution: vis.esriAttr,
+      ext: 'png'
+    });
+
+    vis.tileLayer3 = 
+    L.tileLayer(vis.topoUrl, {
+      id: 'topo-image',
+      attribution: vis.topoAttr,
+      ext: 'png'
+    });
+
 
     vis.theMap = L.map('my-map', {
       center: [39.4, -84],
       zoom: 10,
-      layers: [vis.base_layer]
+      layers: [vis.tileLayer1]
     });
 
     //if you stopped here, you would just have a map
@@ -66,9 +75,38 @@ class LeafletMap {
     vis.svg = vis.overlay.select('svg').attr("pointer-events", "auto")
     
     //handler here for updating the map, as you zoom in and out           
-    vis.theMap.on("zoomend", function(){
-      vis.updateVis();
-    });
+    vis.theMap
+      .on("zoomend", function(){
+        vis.updateVis();
+      })
+      .on("moveend", function(){
+        vis.updateVis();
+      });
+
+
+    vis.dropdown = document.getElementById('dropdown');
+    vis.selected = document.getElementById('selected');
+
+vis.dropdown.addEventListener('change', function() {
+  vis.selected.textContent = dropdown.options[dropdown.selectedIndex].text;
+
+  if(vis.selected.textContent =="Stamen Terrain"){
+    vis.theMap.removeLayer(vis.tileLayer2);
+      vis.theMap.removeLayer(vis.tileLayer3);
+      vis.theMap.addLayer(vis.tileLayer1);
+
+  }
+  else if(vis.selected.textContent =="ESRI"){
+    vis.theMap.removeLayer(vis.tileLayer1);
+    vis.theMap.removeLayer(vis.tileLayer3);
+    vis.theMap.addLayer(vis.tileLayer2);
+  }
+  else{
+    vis.theMap.removeLayer(vis.tileLayer1);
+      vis.theMap.removeLayer(vis.tileLayer2);
+      vis.theMap.addLayer(vis.tileLayer3);
+  }
+});
 
     document.getElementById("service").addEventListener("click", function() {vis.setColorType("service")});
     document.getElementById("timeBtwn").addEventListener("click", function() {vis.setColorType("timeBtwn")});
@@ -92,12 +130,42 @@ class LeafletMap {
     //   desiredMetersForPoint = 100; //or the uncertainty measure... =) 
     //   radiusSize = desiredMetersForPoint / metresPerPixel;
     // }
+
+    // Array of 0s to hold the data counts for each day
+    vis.data.dayTally = new Array(d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]) + 1).fill(0);
+
+    // Max # of calls shown for each day
+    vis.data.dayMax = 250 / d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]);
+
+    // Filter the data for errors, time bounds from timeline brush 
+    vis.filteredData = vis.data.filter( d => {
+      return (
+          !isNaN(d.latitude) 
+          && !isNaN(d.longitude) 
+          && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) 
+          && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1]
+          && vis.theMap.getBounds().contains([d.latitude,d.longitude])
+        );
+      })
+
+    // Then filter the remaining data by counting up the calls for each day and filtering out the excess
+    vis.filteredData = vis.filteredData.filter( d => {
+      let index = d3.timeDay.count(vis.data.timeBounds[0], vis.data.parseTime(d.REQUESTED_DATETIME));
+      vis.data.dayTally[index]++;
+      if (vis.data.dayTally[index] > vis.data.dayMax) {
+        return false;
+      }
+      else return true;
+    })
+
+    // console.log(vis.filteredData);
    
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
    .data(vis.data.filtered.filter( d => {
 	   return (!isNaN(d.longitude) && !isNaN(d.latitude))
    })) 
+
    .join('circle')
 	   .attr("fill", function(d){return vis.colorScale(vis.getColorInput(d))}) 
 	   .attr("stroke", "black")
@@ -143,6 +211,15 @@ class LeafletMap {
 		  // vis.theMap.flyTo([d.latitude, d.longitude], vis.newZoom);
 		 });
 
+  }
+
+  setMapType(type){
+
+  }
+
+  showDropDown(){
+    document.getElementById("myDropdown").classList.toggle("show");
+    
   }
 
   getAllTimeBetween(){
@@ -272,6 +349,7 @@ class LeafletMap {
 
   renderVis() {
     let vis = this;
+    
 
     //not using right now... 
  
