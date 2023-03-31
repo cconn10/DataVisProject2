@@ -10,6 +10,9 @@ class LeafletMap {
       parentElement: _config.parentElement,
     }
     this.data = _data;
+
+    this.color = "timeBtwn"
+    this.colorScale = this.setColorScale();
     this.initVis();
   }
   
@@ -37,22 +40,31 @@ class LeafletMap {
 
   
     //this is the base map layer, where we are showing the map background
-    vis.base_layer = L.tileLayer(vis.topoUrl, {
+    vis.tileLayer1 = L.tileLayer(vis.stUrl, {
+      id: 'st-image',
+      attribution: vis.stAttr,
+      ext: 'png'
+    });
+
+    vis.tileLayer2 = 
+    L.tileLayer(vis.esriUrl, {
       id: 'esri-image',
+      attribution: vis.esriAttr,
+      ext: 'png'
+    });
+
+    vis.tileLayer3 = 
+    L.tileLayer(vis.topoUrl, {
+      id: 'topo-image',
       attribution: vis.topoAttr,
       ext: 'png'
     });
 
-//     vis.base_layer = L.tileLayer('https://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey={apikey}', {
-// 	attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-// 	apikey: '<your apikey>',
-// 	maxZoom: 22
-// });
 
     vis.theMap = L.map('my-map', {
       center: [39.4, -84],
       zoom: 10,
-      layers: [vis.base_layer]
+      layers: [vis.tileLayer1]
     });
 
     //if you stopped here, you would just have a map
@@ -71,7 +83,37 @@ class LeafletMap {
         vis.updateVis();
       });
 
-	vis.updateVis();
+
+    vis.dropdown = document.getElementById('dropdown');
+    vis.selected = document.getElementById('selected');
+
+vis.dropdown.addEventListener('change', function() {
+  vis.selected.textContent = dropdown.options[dropdown.selectedIndex].text;
+
+  if(vis.selected.textContent =="Stamen Terrain"){
+    vis.theMap.removeLayer(vis.tileLayer2);
+      vis.theMap.removeLayer(vis.tileLayer3);
+      vis.theMap.addLayer(vis.tileLayer1);
+
+  }
+  else if(vis.selected.textContent =="ESRI"){
+    vis.theMap.removeLayer(vis.tileLayer1);
+    vis.theMap.removeLayer(vis.tileLayer3);
+    vis.theMap.addLayer(vis.tileLayer2);
+  }
+  else{
+    vis.theMap.removeLayer(vis.tileLayer1);
+      vis.theMap.removeLayer(vis.tileLayer2);
+      vis.theMap.addLayer(vis.tileLayer3);
+  }
+});
+
+    document.getElementById("service").addEventListener("click", function() {vis.setColorType("service")});
+    document.getElementById("timeBtwn").addEventListener("click", function() {vis.setColorType("timeBtwn")});
+    document.getElementById("timeYear").addEventListener("click", function() {vis.setColorType("timeYear")});
+    document.getElementById("agency").addEventListener("click", function() {vis.setColorType("agency")});
+
+	  vis.updateVis();
   }
 
   updateVis() {
@@ -120,9 +162,12 @@ class LeafletMap {
    
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
-   .data(vis.filteredData) 
+   .data(vis.data.filter( d => {
+	   return (!isNaN(d.longitude) && !isNaN(d.latitude) && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
+   })) 
+
    .join('circle')
-	   .attr("fill", "steelblue") 
+	   .attr("fill", function(d){return vis.colorScale(vis.getColorInput(d))}) 
 	   .attr("stroke", "black")
 	   //Leaflet has to take control of projecting points. Here we are feeding the latitude and longitude coordinates to
 	   //leaflet so that it can project them on the coordinates of the view. Notice, we have to reverse lat and lon.
@@ -153,7 +198,7 @@ class LeafletMap {
 	   .on('mouseleave', function() { //function to add mouseover event
 		   d3.select(this).transition() //D3 selects the object we have moused over in order to perform operations on it
 			 .duration('150') //how long we are transitioning between the two states (works like keyframes)
-			 .attr("fill", "steelblue") //change the fill
+			 .attr("fill", function(d){return vis.colorScale(vis.getColorInput(d))}) //change the fill
 			 .attr('r', 3) //change radius
 
 		   d3.select('#tooltip').style('opacity', 0);//turn off the tooltip
@@ -168,9 +213,143 @@ class LeafletMap {
 
   }
 
+  setMapType(type){
+
+  }
+
+  showDropDown(){
+    document.getElementById("myDropdown").classList.toggle("show");
+    
+  }
+
+  getAllTimeBetween(){
+    let vis = this;
+
+    let times = [];
+
+    vis.data.forEach(d => {
+      let t = vis.getTimeBetween(d.REQUESTED_DATETIME, d.UPDATED_DATETIME);
+      times.push(t);
+    });
+
+    return times;
+
+  }
+
+  getTimeBetween(r, u){
+    let req = new Date(r);
+    let up = new Date(u);
+
+    return up-req;
+
+
+  }
+
+  getTimeofYear(d){
+    //Returns the season the request was made
+
+    let dat = new Date(d);
+   
+//Winter is December through Febuary
+    if(dat.getMonth() < 2 || dat.getMonth() == 11){
+      return 1;
+    }
+    //Spring is March through May
+
+    else if(dat.getMonth() >= 2 && dat.getMonth() < 5){
+      return 2;
+    }
+    //Summer is May through August
+    else if(dat.getMonth() >= 5 && dat.getMonth() < 8){
+      return 3;
+    }
+    //Fall is September through November
+    else{
+      return 4;
+    }
+
+  }
+
+  setColorScale() {
+    let vis = this;
+    if(vis.color == "service"){
+
+      //map each service code to a color
+
+      let serviceData = d3.rollup(vis.data, v => v.length, d => d.SERVICE_CODE);
+      //console.log(planetData);
+
+      const serviceArr = Array.from(serviceData, function(d){return{key: d[0], value: d[1]};});
+      //console.log(planetArr);
+
+      let sorteService = serviceArr.slice().sort((a, b) => d3.descending(a.value, b.value));
+      //console.log(sortePlanet);
+
+      return d3.scaleOrdinal().domain(sorteService.map(d => d.key)).range(["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ab"]);
+    
+
+    }
+    else if(vis.color == "timeBtwn"){
+
+        var times = vis.getAllTimeBetween();
+
+      return d3.scaleOrdinal().domain([d3.min(times), d3.max(times)]).range(d3.interpolateHslLong("red", "green")(0.5));
+
+    }
+    else if(vis.color == "timeYear"){
+
+      return d3.scaleOrdinal().domain([1,2,3,4]).range(["blue", "green", "yellow", "orange"]);
+
+    }
+    else{
+
+      let agencies = d3.rollup(vis.data, v => v.length, d => d.AGENCY_RESPONSIBLE);
+      //console.log(planetData);
+
+      const agenciesArr = Array.from(agencies, function(d){return{key: d[0], value: d[1]};});
+      //console.log(planetArr);
+
+      let sortedAgencies = agenciesArr.slice().sort((a, b) => d3.ascending(a.key, b.key));
+      //console.log(sortedPlanet);
+
+      return d3.scaleOrdinal().domain(sortedAgencies.map(d => d.key)).range(["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ab"]);
+    
+
+    }
+    
+  }
+
+  setColorType(type){
+    let vis = this;
+
+    vis.color = type;
+
+    vis.colorScale = vis.setColorScale();
+
+    vis.updateVis();
+
+  }
+
+  getColorInput(d){
+    let vis = this;
+
+    if(vis.color == "service"){
+      return d.SERVICE_CODE;
+    }
+    else if(vis.color == "timeBtwn"){
+      return vis.getTimeBetween(d.REQUESTED_DATETIME, d.UPDATED_DATETIME);
+    }
+    else if(vis.color == "timeYear"){
+      return vis.getTimeofYear(d.REQUESTED_DATETIME);
+    }
+    else{
+      return d.AGENCY_RESPONSIBLE;
+    }
+  }
 
   renderVis() {
     let vis = this;
+    
 
     //not using right now... 
  

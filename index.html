@@ -7,6 +7,29 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div id="colorButtons">
+        <p>Select Color Encoding: </p>
+        <button id="service">Service</button>
+        <button id="timeBtwn">Time Between</button>
+        <button id="timeYear">Time of Year</button>
+        <button id="agency">Agency</button>
+    </div>
+    <div class="dropdown">
+        <select id="dropdown">
+            <option value="st">Stamen Terrain</option>
+            <option value="er">ESRI</option>
+            <option value="topo">TOPO</option>
+          </select>
+
+          <div id="selected"></div>
+
+        <!-- <button id="dropbtn">Map Background</button>
+        <div id="myDropdown" class="dropdown-content">
+          <button id="st">Stamen Terrain</a>
+          <button id="er">ESRI</a>
+            <button id="topo">TOPO</button>
+        </div> -->
+      </div>
     <div id="my-map"></div>
     <svg id="timeline"></svg>
     <svg id="heatmap"></svg>
