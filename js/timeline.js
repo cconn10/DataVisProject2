@@ -83,6 +83,8 @@ class Timeline {
         // Rollup data to get counts of calls per day
         vis.dayCounts = d3.rollup(vis.data, d => d.length, d => d.REQUESTED_DATETIME);
 
+        console.log(vis.dayCounts);
+
         // Structure data to be easily iteratable/sortable
         vis.dataOverTime = [];
         vis.dayCounts.forEach((value, key, map) => {
@@ -126,7 +128,7 @@ class Timeline {
         vis.line = d3.line()
             .x(d => vis.xScale(vis.xValue(d)))
             .y(d => vis.yScale(vis.yValue(d)));
-
+console.log(vis.dataOverTime);
         // Add line path 
         vis.linePath
             .data([vis.dataOverTime])

@@ -41,7 +41,7 @@ class LeafletMap {
   
     //this is the base map layer, where we are showing the map background
     vis.tileLayer1 = L.tileLayer(vis.stUrl, {
-      id: 'esri-image',
+      id: 'st-image',
       attribution: vis.stAttr,
       ext: 'png'
     });
@@ -55,7 +55,7 @@ class LeafletMap {
 
     vis.tileLayer3 = 
     L.tileLayer(vis.topoUrl, {
-      id: 'esri-image',
+      id: 'topo-image',
       attribution: vis.topoAttr,
       ext: 'png'
     });
@@ -79,40 +79,30 @@ class LeafletMap {
       vis.updateVis();
     });
 
-    window.onclick = function(event) {
-      if (!event.target.matches('.dropbtn')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        var i;
-        for (i = 0; i < dropdowns.length; i++) {
-          var openDropdown = dropdowns[i];
-          if (openDropdown.classList.contains('show')) {
-            openDropdown.classList.remove('show');
-          }
-        }
-      }
-    }
 
-    document.getElementById('dropbtn').addEventListener("click", function(){vis.showDropDown()});
+    vis.dropdown = document.getElementById('dropdown');
+    vis.selected = document.getElementById('selected');
 
-    document.getElementById("st").addEventListener("click", function() 
-    {
-      vis.theMap.removeLayer(vis.tileLayer2);
+vis.dropdown.addEventListener('change', function() {
+  vis.selected.textContent = dropdown.options[dropdown.selectedIndex].text;
+
+  if(vis.selected.textContent =="Stamen Terrain"){
+    vis.theMap.removeLayer(vis.tileLayer2);
       vis.theMap.removeLayer(vis.tileLayer3);
       vis.theMap.addLayer(vis.tileLayer1);
-    });
-    document.getElementById("er").addEventListener("click", function() 
-    {
-      vis.theMap.removeLayer(vis.tileLayer1);
-      vis.theMap.removeLayer(vis.tileLayer3);
-      vis.theMap.addLayer(vis.tileLayer2);
-    });
-    document.getElementById("topo").addEventListener("click", function() 
-    {
-      vis.theMap.removeLayer(vis.tileLayer1);
+
+  }
+  else if(vis.selected.textContent =="ESRI"){
+    vis.theMap.removeLayer(vis.tileLayer1);
+    vis.theMap.removeLayer(vis.tileLayer3);
+    vis.theMap.addLayer(vis.tileLayer2);
+  }
+  else{
+    vis.theMap.removeLayer(vis.tileLayer1);
       vis.theMap.removeLayer(vis.tileLayer2);
       vis.theMap.addLayer(vis.tileLayer3);
-    });
-
+  }
+});
 
     document.getElementById("service").addEventListener("click", function() {vis.setColorType("service")});
     document.getElementById("timeBtwn").addEventListener("click", function() {vis.setColorType("timeBtwn")});
