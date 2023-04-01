@@ -1,5 +1,14 @@
 body {
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  background-color: #faf9f6;
+}
+
+button, select {
+  background-color: lightsalmon;
+  border: 1px solid black;
+  border-radius: 5px;
+  height: 20px;
+  margin: 0 2px;
 }
 
 .container {
@@ -36,17 +45,24 @@ body {
 #colorButtons {
   grid-column: line4 / end;
   grid-row: start / line2;
+  display: flex;
+  align-items: center;
+  
 }
 
 #buttonLabel {
   grid-column: line3 / line4;
   grid-row: start / line2;
   font-size: 12px;
+  display: flex;
+  align-items: center;
 }
 
 .dropdown {
   grid-column: line2 / line3;
   grid-row: start / line2;
+  display: flex;
+  align-items: center;
 }
 
 .service-name {

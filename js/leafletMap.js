@@ -15,8 +15,8 @@ class LeafletMap {
     this.colorScale = this.setColorScale();
     this.keyScale = this.getTypeColors();
 
-    this.grey = '#cad2c5';
-    this.green = '#84a98c';
+    this.lightorange = '#ffa07a';
+    this.darkorange = '#ff6d33';
 
     this.keyX = 0;
     this.keyY = 0;
@@ -131,10 +131,10 @@ vis.dropdown.addEventListener('change', function() {
   vis.timeYearBttn =  document.getElementById("timeYear");
   vis.agencyBttn = document.getElementById("agency");
 
-  vis.serviceBttn.style.backgroundColor = vis.green;
-      vis.timeBtwnBttn.style.backgroundColor = vis.grey;
-      vis.timeYearBttn.style.backgroundColor = vis.grey;
-      vis.agencyBttn.style.backgroundColor = vis.grey;
+  vis.serviceBttn.style.backgroundColor = vis.darkorange;
+      vis.timeBtwnBttn.style.backgroundColor = vis.lightorange;
+      vis.timeYearBttn.style.backgroundColor = vis.lightorange;
+      vis.agencyBttn.style.backgroundColor = vis.lightorange;
 
     vis.serviceBttn.addEventListener("click", function() 
     {
@@ -142,10 +142,10 @@ vis.dropdown.addEventListener('change', function() {
 
       vis.keyScale = vis.getTypeColors();
 
-      vis.serviceBttn.style.backgroundColor = vis.green;
-      vis.timeBtwnBttn.style.backgroundColor = vis.grey;
-      vis.timeYearBttn.style.backgroundColor = vis.grey;
-      vis.agencyBttn.style.backgroundColor = vis.grey;
+      vis.serviceBttn.style.backgroundColor = vis.darkorange;
+      vis.timeBtwnBttn.style.backgroundColor = vis.lightorange;
+      vis.timeYearBttn.style.backgroundColor = vis.lightorange;
+      vis.agencyBttn.style.backgroundColor = vis.lightorange;
       
     });
     vis.timeBtwnBttn.addEventListener("click", function() 
@@ -154,10 +154,10 @@ vis.dropdown.addEventListener('change', function() {
 
       vis.keyScale = vis.getTypeColors();
 
-      vis.serviceBttn.style.backgroundColor = vis.grey;
-      vis.timeBtwnBttn.style.backgroundColor = vis.green;
-      vis.timeYearBttn.style.backgroundColor = vis.grey;
-      vis.agencyBttn.style.backgroundColor = vis.grey;
+      vis.serviceBttn.style.backgroundColor = vis.lightorange;
+      vis.timeBtwnBttn.style.backgroundColor = vis.darkorange;
+      vis.timeYearBttn.style.backgroundColor = vis.lightorange;
+      vis.agencyBttn.style.backgroundColor = vis.lightorange;
     
     });
     vis.timeYearBttn.addEventListener("click", function() 
@@ -166,10 +166,10 @@ vis.dropdown.addEventListener('change', function() {
 
       vis.keyScale = vis.getTypeColors();
 
-      vis.serviceBttn.style.backgroundColor = vis.grey;
-      vis.timeBtwnBttn.style.backgroundColor = vis.grey;
-      vis.timeYearBttn.style.backgroundColor = vis.green;
-      vis.agencyBttn.style.backgroundColor = vis.grey;
+      vis.serviceBttn.style.backgroundColor = vis.lightorange;
+      vis.timeBtwnBttn.style.backgroundColor = vis.lightorange;
+      vis.timeYearBttn.style.backgroundColor = vis.darkorange;
+      vis.agencyBttn.style.backgroundColor = vis.lightorange;
     
     });
     document.getElementById("agency").addEventListener("click", function() 
@@ -178,10 +178,10 @@ vis.dropdown.addEventListener('change', function() {
 
       vis.keyScale = vis.getTypeColors();
 
-      vis.serviceBttn.style.backgroundColor = vis.grey;
-      vis.timeBtwnBttn.style.backgroundColor = vis.grey;
-      vis.timeYearBttn.style.backgroundColor = vis.grey;
-      vis.agencyBttn.style.backgroundColor = vis.green;
+      vis.serviceBttn.style.backgroundColor = vis.lightorange;
+      vis.timeBtwnBttn.style.backgroundColor = vis.lightorange;
+      vis.timeYearBttn.style.backgroundColor = vis.lightorange;
+      vis.agencyBttn.style.backgroundColor = vis.darkorange;
     
     });
 

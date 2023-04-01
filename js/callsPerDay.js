@@ -62,7 +62,7 @@ class CallsPerDay {
             .data(vis.daysOfTheWeek)
             .join("text")
                 .attr("class","label")
-                .attr("y", d => (vis.yScale(vis.yValue(d)) + (vis.yScale.bandwidth() / 2)))
+                .attr("y", d => (vis.yScale(vis.yValue(d))))
                 .transition()
                 .attr("x", d => vis.xScale(vis.xValue(d)))
                 .attr("dy", ".75em")

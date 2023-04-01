@@ -31,7 +31,8 @@ class ServiceName {
             .range([0, vis.width])
         vis.yScale = d3.scaleBand()
             .range([0, vis.height])
-            .paddingInner(0.15)
+            .paddingInner(0.2)
+            .paddingOuter(0.2)
 
         vis.xAxis = d3.axisBottom(vis.xScale)
         vis.yAxis = d3.axisLeft(vis.yScale)
@@ -83,6 +84,7 @@ class ServiceName {
             .data(vis.serviceNames)
             .join("text")
                 .attr("class","label")
+                .attr("font-size","10px")
                 .attr("y", d => (vis.yScale(vis.yValue(d))))
                 .transition()
                 .attr("x", d => vis.xScale(vis.xValue(d)) + 2)
