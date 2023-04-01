@@ -193,7 +193,7 @@ vis.dropdown.addEventListener('change', function() {
 
     vis.radiusSize = 3; 
   
-    vis.keyX = 0;
+    vis.keyX = 1;
     vis.keyY = 0;
 
     vis.descX = 15;
@@ -216,7 +216,7 @@ vis.dropdown.addEventListener('change', function() {
     .join('text')
     .attr("x", function(){return vis.descX})
     .attr("y", function(){return vis.descY = vis.descY + 15})
-    .attr('font-size', "12px")
+    .attr('font-size', "10px")
     .text(function(d){return d});
 
     // Array of 0s to hold the data counts for each day
@@ -240,7 +240,7 @@ vis.dropdown.addEventListener('change', function() {
    
    //these are the city locations, displayed as a set of dots 
    vis.Dots = vis.svg.selectAll('circle')
-   .data(vis.data.filter( d => {
+   .data(vis.filteredData.filter( d => {
 	   return (!isNaN(d.longitude) && !isNaN(d.latitude) && vis.data.timeBounds[0] <= vis.data.parseTime(d.REQUESTED_DATETIME) && vis.data.parseTime(d.REQUESTED_DATETIME) <= vis.data.timeBounds[1])
    })) 
    .join('circle')

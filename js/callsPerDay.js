@@ -33,7 +33,7 @@ class CallsPerDay {
             .range([0, vis.height])
             .paddingInner(0.15)
 
-        vis.xAxis = d3.axisBottom(vis.xScale)
+        vis.xAxis = d3.axisBottom(vis.xScale).ticks(7)
         vis.yAxis = d3.axisLeft(vis.yScale).tickValues([])
         
         vis.xAxisG = vis.chart.append('g')
