@@ -4,7 +4,7 @@ class RequestTimeSpan {
             parentElement: _config.parentElement,
             containerHeight: _config.containerHeight || 500,
             containerWidth: _config.containerWidth || 140,
-            margin: {top: 40, right: 30, bottom: 30, left: 20},
+            margin: {top: 40, right: 30, bottom: 30, left: 30},
             toolTipPadding: _config.toolTipPadding || 15,
         }
         this.dispatcher = _dispatcher
@@ -32,7 +32,7 @@ class RequestTimeSpan {
         vis.yScale = d3.scaleLinear()
             .range([0, vis.height])
 
-        vis.xAxis = d3.axisBottom(vis.xScale)
+        vis.xAxis = d3.axisBottom(vis.xScale).ticks(7)
         vis.yAxis = d3.axisLeft(vis.yScale)
         
         vis.xAxisG = vis.chart.append('g')

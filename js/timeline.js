@@ -52,7 +52,8 @@ class Timeline {
         vis.xAxis = d3.axisBottom(vis.xScale)
 			.tickFormat(d3.timeFormat("%Y-%m-%d"));
 
-        vis.yAxis = d3.axisLeft(vis.yScale);
+        vis.yAxis = d3.axisLeft(vis.yScale)
+            .ticks(5);
 
 		// Append x-axis group and move it to the bottom of the chart
 		vis.xAxisG = vis.chart.append('g')
@@ -142,8 +143,8 @@ class Timeline {
 		
 		// Update the brush and define a default position
 		// TODO: change default position to something meaningful?
-		const defaultBrushSelection = [ vis.xScale(data.parseTime("2022-11-01")), 
-                                        vis.xScale(data.parseTime("2022-11-09"))];
+		const defaultBrushSelection = [ vis.xScale(data.parseTime("2022-08-25")), 
+                                        vis.xScale(data.parseTime("2022-09-07"))];
 		vis.brushG
 			.call(vis.brush)
 			.call(vis.brush.move, defaultBrushSelection);
