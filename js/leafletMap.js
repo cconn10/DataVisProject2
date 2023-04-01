@@ -201,7 +201,6 @@ vis.dropdown.addEventListener('change', function() {
 
     vis.keyScale = this.getTypeColors();
 
-
     vis.Squares = vis.svgKey.selectAll('rect')
     .data(vis.getTypeKey())
     .join('rect')
@@ -219,6 +218,23 @@ vis.dropdown.addEventListener('change', function() {
     .attr("y", function(){return vis.descY = vis.descY + 15})
     .text(function(d){return d});
 
+    // Array of 0s to hold the data counts for each day
+    vis.data.dayTally = new Array(d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]) + 1).fill(0);
+
+    // Max # of calls shown for each day
+    vis.data.dayMax = 250 / d3.timeDay.count(vis.data.timeBounds[0], vis.data.timeBounds[1]);
+
+    vis.filteredData = vis.data.filtered.filter(d => d.requestedDate >= vis.data.timeBounds[0] && d.requestedDate <= vis.data.timeBounds[1])
+
+    // Then filter the remaining data by counting up the calls for each day and filtering out the excess
+    vis.filteredData = vis.filteredData.filter( d => {
+      let index = d3.timeDay.count(vis.data.filtered[0], vis.data.parseTime(d.REQUESTED_DATETIME));
+      vis.data.dayTally[index]++; 
+      if (vis.data.dayTally[index] > vis.data.dayMax) {
+        return false;
+      }
+      else return true;
+    })
 
    
    //these are the city locations, displayed as a set of dots 
@@ -469,8 +485,6 @@ vis.dropdown.addEventListener('change', function() {
       let t = vis.getTimeBetween(d.REQUESTED_DATETIME, d.UPDATED_DATETIME);
       times.push(t);
     });
-
-    console.log("times between ", times);
 
     return times;
 

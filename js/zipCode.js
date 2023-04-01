@@ -4,7 +4,7 @@ class Zipcode {
             parentElement: _config.parentElement,
             containerHeight: _config.containerHeight || 500,
             containerWidth: _config.containerWidth || 140,
-            margin: {top: 10, right: 20, bottom: 30, left: 170},
+            margin: {top: 40, right: 20, bottom: 30, left: 170},
             toolTipPadding: _config.toolTipPadding || 15,
         }
         this.dispatcher = _dispatcher
@@ -50,14 +50,16 @@ class Zipcode {
         let otherCount = 0
         let shiftCount = 0
 
+        vis.filteredData = vis.data.filtered.filter(d => d.requestedDate >= vis.data.timeBounds[0] && d.requestedDate <= vis.data.timeBounds[1])
+
         vis.xValue = d => d[1]
         vis.yValue = d => d[0]
 
-        vis.zipcode = Array.from(d3.rollup(vis.data.filtered, d=> d.length, d => d.zipcode)).sort((a, b) => a[1] - b[1])
+        vis.zipcode = Array.from(d3.rollup(vis.filteredData, d=> d.length, d => d.zipcode)).sort((a, b) => a[1] - b[1])
 
         vis.zipcode.forEach(value => {
 
-            if(value[1] < (vis.data.filtered.length / 100)){
+            if(value[1] < (vis.filteredData.length / 100)){
                 otherCount += value[1]
                 shiftCount += 1
             }
@@ -85,6 +87,15 @@ class Zipcode {
                 .attr("dy", ".75em")
                 .text(d => vis.xValue(d));
 
+            vis.chart.append('text')
+                .attr('class', 'axis-title')
+                .attr('font-size', '14px')
+                .attr('y', (-vis.config.margin.top / 2))
+                .attr('x', vis.width / 2)
+                .attr('dy', '.71em')
+                .style('text-anchor', 'middle')
+                .text("Calls Per Zip Code")
+
         vis.renderVis()
     }
 
@@ -102,12 +113,6 @@ class Zipcode {
                 let index = vis.selection.indexOf(d[0])
                 if(index == -1){
                     vis.selection.push(d[0])
-                    vis.dispatcher.call('filterZipcode', event, vis.selection);
-
-                    vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
-                }
-                else{
-                    vis.selection.splice(index, 1)
                     vis.dispatcher.call('filterZipcode', event, vis.selection);
 
                     vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')

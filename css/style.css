@@ -1,5 +1,5 @@
 body {
-  font-family: sans-serif;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
 #my-map {
@@ -71,4 +71,8 @@ body {
   padding: 5px;
   font-size: 16px;
   display: none;
+}
+
+.label {
+  font-size: 12px;
 }

@@ -4,7 +4,7 @@ class ServiceName {
             parentElement: _config.parentElement,
             containerHeight: _config.containerHeight || 500,
             containerWidth: _config.containerWidth || 140,
-            margin: {top: 10, right: 20, bottom: 30, left: 170},
+            margin: {top: 40, right: 20, bottom: 30, left: 170},
             toolTipPadding: _config.toolTipPadding || 15,
         }
         this.dispatcher = _dispatcher
@@ -50,10 +50,12 @@ class ServiceName {
         let otherCount = 0
         let shiftCount = 0
 
-        vis.serviceNames = Array.from(d3.rollup(vis.data.filtered, d=> d.length, d => d.serviceName)).sort((a, b) => a[1] - b[1])
+        vis.filteredData = vis.data.filtered.filter(d => d.requestedDate >= vis.data.timeBounds[0] && d.requestedDate <= vis.data.timeBounds[1])
+
+        vis.serviceNames = Array.from(d3.rollup(vis.filteredData, d=> d.length, d => d.serviceName)).sort((a, b) => a[1] - b[1])
 
         vis.serviceNames.forEach(value => {
-            if(value[1] < (vis.data.filtered.length / 100)){
+            if(value[1] < (vis.filteredData.length / 100)){
                 otherCount += value[1]
                 shiftCount += 1
             }
@@ -75,15 +77,26 @@ class ServiceName {
         vis.xScale.domain([0, d3.max(vis.serviceNames, d => vis.xValue(d))])
         vis.yScale.domain((vis.serviceNames.map(m => vis.yValue(m))))
 
+        console.log(vis.yScale.bandwidth())
+
         vis.chart.selectAll(".label")     
             .data(vis.serviceNames)
             .join("text")
                 .attr("class","label")
-                .attr("y", d => (vis.yScale(vis.yValue(d)) + (vis.yScale.bandwidth() / 2)))
+                .attr("y", d => (vis.yScale(vis.yValue(d))))
                 .transition()
-                .attr("x", d => vis.xScale(vis.xValue(d)))
+                .attr("x", d => vis.xScale(vis.xValue(d)) + 2)
                 .attr("dy", ".75em")
                 .text(d => vis.xValue(d));
+
+            vis.chart.append('text')
+                .attr('class', 'axis-title')
+                .attr('font-size', '14px')
+                .attr('y', (-vis.config.margin.top / 2))
+                .attr('x', vis.width / 2)
+                .attr('dy', '.71em')
+                .style('text-anchor', 'middle')
+                .text("Calls Per Service Type")
 
         vis.renderVis()
     }
@@ -102,12 +115,6 @@ class ServiceName {
                 let index = vis.selection.indexOf(d[0])
                 if(index == -1){
                     vis.selection.push(d[0])
-                    vis.dispatcher.call('filterServiceName', event, vis.selection);
-
-                    vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
-                }
-                else{
-                    vis.selection.splice(index, 1)
                     vis.dispatcher.call('filterServiceName', event, vis.selection);
 
                     vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
