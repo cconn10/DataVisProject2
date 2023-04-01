@@ -2,6 +2,44 @@ body {
   font-family: sans-serif;
 }
 
+.container {
+  width: 95vw;
+  height: 95vh;
+  display: grid;
+  grid-template-columns: [start] 50% [line2] 25% [line3] 25% [end];
+  grid-template-rows: [start] 50% [line2] 10% [line3] 40% [end];
+}
+
+.whole-map {
+  grid-column: start / line2;
+  grid-row: start / line2;
+}
+
+.service-name {
+  grid-column: line2 / line3;
+  grid-row: start / line2;
+}
+
+.zipcode {
+  grid-column: line3 / end;
+  grid-row: start / line2;
+}
+
+.timeline {
+  grid-column: start / end;
+  grid-row: line2 / line3;
+}
+
+.heat-map {
+  grid-column: start / line3;
+  grid-row: line3 / end;
+}
+
+.request-time-span {
+  grid-column: line3 / end;
+  grid-row: line3 / end;
+}
+
 #my-map {
   width: 100%;
   height: 500px;
