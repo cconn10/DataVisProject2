@@ -94,6 +94,10 @@ class LeafletMap {
       vis.updateVis();
     });
 
+    vis.theMap.on("moveend", function(){
+      vis.updateVis();
+    });
+
     vis.legend = document.getElementById('legend')
 
     vis.dropdown = document.getElementById('dropdown');
