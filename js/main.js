@@ -60,21 +60,21 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 		serviceName = new ServiceName({
 			parentElement: '#service-name',
 			'containerHeight': 300,
-			'containerWidth': 500
+			'containerWidth': 400
 		}, dispatcher, data)
 		serviceName.updateVis()
 
 		requestedTimeSpan = new RequestTimeSpan({
 			parentElement: '#request-time-span',
 			'containerHeight': 300,
-			'containerWidth': 500
+			'containerWidth': 300
 		}, dispatcher, data)
 		requestedTimeSpan.updateVis()
 
 		zipcode = new Zipcode({
 			parentElement: '#zipcode',
 			'containerHeight': 300,
-			'containerWidth': 500
+			'containerWidth': 300
 		}, dispatcher, data)
 		zipcode.updateVis()
 
@@ -88,7 +88,7 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 		timeline = new Timeline({
 			'parentElement': '#timeline',
 			'containerHeight': 100,
-			'containerWidth': 1500
+			'containerWidth': 1400
 		}, dispatcher, data);
 		timeline.updateVis();
 

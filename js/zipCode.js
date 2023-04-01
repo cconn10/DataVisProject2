@@ -4,7 +4,7 @@ class Zipcode {
             parentElement: _config.parentElement,
             containerHeight: _config.containerHeight || 500,
             containerWidth: _config.containerWidth || 140,
-            margin: {top: 40, right: 20, bottom: 30, left: 170},
+            margin: {top: 40, right: 20, bottom: 30, left: 50},
             toolTipPadding: _config.toolTipPadding || 15,
         }
         this.dispatcher = _dispatcher
@@ -81,7 +81,7 @@ class Zipcode {
             .data(vis.zipcode)
             .join("text")
                 .attr("class","label")
-                .attr("y", d => (vis.yScale(vis.yValue(d)) + (vis.yScale.bandwidth() / 2)))
+                .attr("y", d => (vis.yScale(vis.yValue(d))))
                 .transition()
                 .attr("x", d => vis.xScale(vis.xValue(d)))
                 .attr("dy", ".75em")

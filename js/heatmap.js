@@ -4,7 +4,7 @@ class Heatmap {
 			parentElement: _config.parentElement,
 			containerWidth: _config.containerWidth || 500,
 			containerHeight: _config.containerHeight || 140,
-			margin: { top: 10, bottom: 30, right: 0, left: 50 }
+			margin: { top: 40, bottom: 30, right: 0, left: 50 }
         }
 		
 		this.dispatcher = _dispatcher;
@@ -70,6 +70,14 @@ class Heatmap {
         vis.yAxisG = vis.chart.append('g')
             .attr('class', 'axis y-axis');
 
+        vis.chart.append('text')
+            .attr('class', 'axis-title')
+            .attr('font-size', '14px')
+            .attr('y', (-vis.config.margin.top / 2))
+            .attr('x', vis.width )
+            .attr('dy', '.71em')
+            .style('text-anchor', 'end')
+            .text("Calls Per Day of the Week")
 	}
 
 	updateVis() {
