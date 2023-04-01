@@ -77,7 +77,7 @@ class LeafletMap {
 
 
     vis.theMap = L.map('my-map', {
-      center: [39.4, -84],
+      center: [39.1, -84.5],
       zoom: 10,
       layers: [vis.tileLayer1]
     });   
@@ -87,7 +87,7 @@ class LeafletMap {
     //initialize svg for d3 to add to map
     L.svg({clickable:true}).addTo(vis.theMap)// we have to make the svg layer clickable
     vis.overlay = d3.select(vis.theMap.getPanes().overlayPane)
-    vis.svg = vis.overlay.select('svg').attr("pointer-events", "auto")
+    vis.svg = vis.overlay.select('svg').attr("pointer-events", "auto");
     
     //handler here for updating the map, as you zoom in and out           
     vis.theMap.on("zoomend", function(){
@@ -98,12 +98,12 @@ class LeafletMap {
       vis.updateVis();
     });
 
-    vis.legend = document.getElementById('legend')
+    vis.legend = document.getElementById('legend')//.attr("width", 150).attr("height", 450)
 
     vis.dropdown = document.getElementById('dropdown');
     vis.selected = document.getElementById('selected');
 
-    vis.svgKey = d3.select("#legend").append("svg").attr("width", 300).attr("height", 800)
+    vis.svgKey = d3.select("#legend").append("svg")//.attr("width", 300).attr("height", 800)
 
 vis.dropdown.addEventListener('change', function() {
   vis.selected.textContent = dropdown.options[dropdown.selectedIndex].text;
@@ -216,6 +216,7 @@ vis.dropdown.addEventListener('change', function() {
     .join('text')
     .attr("x", function(){return vis.descX})
     .attr("y", function(){return vis.descY = vis.descY + 15})
+    .attr('font-size', "12px")
     .text(function(d){return d});
 
     // Array of 0s to hold the data counts for each day

@@ -2,9 +2,81 @@ body {
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
+.container {
+  width: 95vw;
+  height: 95vh;
+  display: grid;
+  grid-template-columns: [start] 50% [line2] 25% [line3] 25% [end];
+  grid-template-rows: [start] 50% [line2] 10% [line3] 40% [end];
+}
+
+.whole-map {
+  grid-column: start / line2;
+  grid-row: start / line2;
+  display: grid;
+  grid-template-columns: [start] 20% [line2] 15% [line3] 15% [line4] 45% [end];
+  grid-template-rows: [start] 10% [line2] 90% [end];
+}
+
+#my-map {
+  grid-column: line2 / end;
+  grid-row: line2 / end;
+}
+
+#legend {
+  width: 100%;
+  height: 100%;
+}
+
+#legendBox {
+  grid-column: start / line2;
+  grid-row: line2 / end;
+}
+
+#colorButtons {
+  grid-column: line4 / end;
+  grid-row: start / line2;
+}
+
+#buttonLabel {
+  grid-column: line3 / line4;
+  grid-row: start / line2;
+  font-size: 12px;
+}
+
+.dropdown {
+  grid-column: line2 / line3;
+  grid-row: start / line2;
+}
+
+.service-name {
+  grid-column: line2 / line3;
+  grid-row: start / line2;
+}
+
+.zipcode {
+  grid-column: line3 / end;
+  grid-row: start / line2;
+}
+
+.timeline {
+  grid-column: start / end;
+  grid-row: line2 / line3;
+}
+
+.heat-map {
+  grid-column: start / line3;
+  grid-row: line3 / end;
+}
+
+.request-time-span {
+  grid-column: line3 / end;
+  grid-row: line3 / end;
+}
+
 #my-map {
   width: 100%;
-  height: 500px;
+  height: 100%;
 }
 
 #tooltip {
