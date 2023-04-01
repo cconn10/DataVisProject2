@@ -4,7 +4,7 @@ class CallsPerDay {
             parentElement: _config.parentElement,
             containerHeight: _config.containerHeight || 500,
             containerWidth: _config.containerWidth || 140,
-            margin: {top: 10, right: 50, bottom: 30, left: 5},
+            margin: {top: 40, right: 20, bottom: 30, left: 5},
             toolTipPadding: _config.toolTipPadding || 15,
         }
         this.dispatcher = _dispatcher
@@ -47,8 +47,10 @@ class CallsPerDay {
     updateVis() {
         let vis = this
 
+        vis.filteredData = vis.data.filtered.filter(d => d.requestedDate >= vis.data.timeBounds[0] && d.requestedDate <= vis.data.timeBounds[1])
+
         vis.dayConverter = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-        vis.daysOfTheWeek = Array.from(d3.rollup(vis.data.filtered, d=> d.length, d => d.requestedDate.getDay())).sort()
+        vis.daysOfTheWeek = Array.from(d3.rollup(vis.filteredData, d=> d.length, d => d.requestedDate.getDay())).sort()
 
         vis.xValue = d => d[1]
         vis.yValue = d => vis.dayConverter[d[0]]
@@ -65,6 +67,7 @@ class CallsPerDay {
                 .attr("x", d => vis.xScale(vis.xValue(d)))
                 .attr("dy", ".75em")
                 .text(d => vis.xValue(d));
+                
 
         vis.renderVis()
     }
@@ -82,16 +85,9 @@ class CallsPerDay {
                 .on('click', (event, d) => {
                     let index = vis.selection.indexOf(d[0])
                     if(index == -1){
-                        console.log(vis.selection)
                         vis.selection.push(d[0])
                         vis.dispatcher.call('filterCallsPerDay', event, vis.selection);
     
-                        vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
-                    }
-                    else{
-                        vis.selection.splice(index, 1)
-                        vis.dispatcher.call('filterCallsPerDay', event, vis.selection);
-                        
                         vis.bars.attr('fill', d=> vis.selection.includes(d[0]) ? '#9e3715' : '#cb6543')
                     }
                 })

@@ -4,7 +4,7 @@ class RequestTimeSpan {
             parentElement: _config.parentElement,
             containerHeight: _config.containerHeight || 500,
             containerWidth: _config.containerWidth || 140,
-            margin: {top: 10, right: 20, bottom: 30, left: 170},
+            margin: {top: 40, right: 30, bottom: 30, left: 20},
             toolTipPadding: _config.toolTipPadding || 15,
         }
         this.dispatcher = _dispatcher
@@ -49,15 +49,17 @@ class RequestTimeSpan {
         vis.xValue = d => d.length
         vis.yValue = d => d.x0
 
-        let binCount = vis.data.filtered.length < 100 ? 5
-            : (vis.data.filtered.length < 1000 ? 10 : 20)
+        vis.filteredData = vis.data.filtered.filter(d => d.requestedDate >= vis.data.timeBounds[0] && d.requestedDate <= vis.data.timeBounds[1])
+
+        let binCount = vis.filteredData.length < 100 ? 5
+            : (vis.filteredData.length < 1000 ? 10 : 20)
 
         vis.bins = d3.bin()
         .thresholds(binCount)
         .value(d => (d.updatedDate - d.requestedDate) / (1000 * 60 * 60 * 24))
 
 
-        vis.timeSpan = vis.bins(vis.data.filtered)
+        vis.timeSpan = vis.bins(vis.filteredData)
 
         vis.xScale.domain([0, d3.max(vis.timeSpan, d => vis.xValue(d))])
         vis.yScale.domain([0, d3.max(vis.timeSpan, d => d.x1)])
@@ -72,14 +74,21 @@ class RequestTimeSpan {
                 .attr("dy", ".75em")
                 .text(d => vis.xValue(d) > 0 ? vis.xValue(d) : "");
 
+
+            vis.chart.append('text')
+                .attr('class', 'axis-title')
+                .attr('font-size', '14px')
+                .attr('y', (-vis.config.margin.top / 2))
+                .attr('x', vis.width / 2)
+                .attr('dy', '.71em')
+                .style('text-anchor', 'middle')
+                .text("Time from Call Request to Update")
+            
         vis.renderVis()
     }
 
     renderVis() {
         let vis = this
-        //"translate(" + vis.yScale(d.x0) + "," + vis.xScale(d.length) + ")"
-
-        console.log(vis.timeSpan)
 
         vis.bars = vis.chart.selectAll('.bar')
             .data(vis.timeSpan)
@@ -92,17 +101,8 @@ class RequestTimeSpan {
                 let index = vis.selection.indexOf(d)
                 if(index == -1){
                     vis.selection.push(d)
-                    console.log(vis.selection)
                     vis.dispatcher.call('filterTimeSpan', event, vis.selection);
 
-                    vis.bars
-                        .transition()
-                        .attr('fill', d=> vis.selection.includes(d) ? '#9e3715' : '#cb6543')
-                }
-                else{
-                    vis.selection.splice(index, 1)
-                    vis.dispatcher.call('filterTimeSpan', event, vis.selection);
-                    
                     vis.bars
                         .transition()
                         .attr('fill', d=> vis.selection.includes(d) ? '#9e3715' : '#cb6543')
