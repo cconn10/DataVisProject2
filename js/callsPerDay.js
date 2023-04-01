@@ -4,7 +4,7 @@ class CallsPerDay {
             parentElement: _config.parentElement,
             containerHeight: _config.containerHeight || 500,
             containerWidth: _config.containerWidth || 140,
-            margin: {top: 10, right: 20, bottom: 30, left: 70},
+            margin: {top: 10, right: 50, bottom: 30, left: 5},
             toolTipPadding: _config.toolTipPadding || 15,
         }
         this.dispatcher = _dispatcher
@@ -34,7 +34,7 @@ class CallsPerDay {
             .paddingInner(0.15)
 
         vis.xAxis = d3.axisBottom(vis.xScale)
-        vis.yAxis = d3.axisLeft(vis.yScale)
+        vis.yAxis = d3.axisLeft(vis.yScale).tickValues([])
         
         vis.xAxisG = vis.chart.append('g')
             .attr('class', 'axis x-axis')

@@ -54,7 +54,7 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 		callsPerDay = new CallsPerDay({
 			parentElement: '#calls-per-day',
 			'containerHeight': 300,
-			'containerWidth': 400
+			'containerWidth': 300
 		}, dispatcher, data)
 		callsPerDay.updateVis()
 
@@ -81,8 +81,8 @@ d3.tsv('data/Cincy311_2022_final.tsv')
 
 		heatmap = new Heatmap({
 			'parentElement': '#heatmap',
-			'containerHeight': 250,
-			'containerWidth': 750
+			'containerHeight': 300,
+			'containerWidth': 650
 		}, dispatcher, data);
 		heatmap.updateVis();
 
