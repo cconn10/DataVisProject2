@@ -9,8 +9,8 @@
 <body>
     <div class="container">
         <div class="whole-map">
+            <div id="buttonLabel"><p>Select Color Encoding: </p></div>
             <div id="colorButtons">
-                <p>Select Color Encoding: </p>
                 <button id="service">Service</button>
                 <button id="timeBtwn">Time Between</button>
                 <button id="timeYear">Time of Year</button>
@@ -25,7 +25,9 @@
     
                 <div id="selected"></div>
             </div>
-            <svg id="legend"></svg>
+            <div id="legendBox">
+                <svg id="legend"></svg>
+            </div>
             <div id="my-map"></div>
         </div>
         <div class="service-name">
