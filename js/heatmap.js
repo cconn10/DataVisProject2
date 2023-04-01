@@ -138,8 +138,8 @@ class Heatmap {
                 .attr('y', d => vis.yScale(vis.dayOfWeek[d3.timeDay.count(d3.timeSunday.floor(vis.xValue(d)), vis.xValue(d))]))
                 .on('mouseenter', (event, d) => {
                     let tooltipText = `
-                        <div class="tooltip-label">${vis.formatTime(d.time)}</div>
-                        <div class="tooltip-label">${d.val} Calls</div>
+                        <div>${vis.formatTime(d.time)}</div>
+                        <div>${d.val} Calls</div>
                     `;
 
                     d3.select('#tooltip')
