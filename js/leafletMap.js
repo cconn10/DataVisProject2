@@ -81,7 +81,7 @@ class LeafletMap {
     vis.theMap = L.map("my-map", {
       center: [39.1, -84.5],
       zoom: 10,
-      layers: [vis.tileLayer1],
+      layers: [vis.tileLayer2],
     });
 
     //if you stopped here, you would just have a map
